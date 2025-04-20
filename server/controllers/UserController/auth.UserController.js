@@ -68,9 +68,20 @@ export const createUser = async (req, res) => {
     // Save the new user to the database
     await newUser.save();
 
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.SECRET
+    );
+    res.cookie("access_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "none",
+      maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24, // 1 day
+    });
+
     return res
       .status(201)
-      .json({ message: "User Created Successfully", UserID: newUser._id,user });
+      .json({ message: "User Created Successfully",token, UserID: newUser._id,user });
   } catch (error) {
     console.error("Error creating user:", error);
     return res
