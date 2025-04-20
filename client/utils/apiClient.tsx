@@ -8,28 +8,21 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: true, // Not harmful, just doesn't matter on React Native
 });
 
-// AsyncStorage-based token getter
-const getAccessToken = async () => {
-  try {
-    const token = await AsyncStorage.getItem('access_token');
-    return token;
-  } catch (e) {
-    console.error('Failed to get access token:', e);
-    return null;
-  }
-};
-
-// Request Interceptor
+// Request Interceptor with improved error handling
 api.interceptors.request.use(
   async (config) => {
-    const token = await getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await AsyncStorage.getItem('access_token');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+      return config;
+    } catch (e) {
+      console.error('Error in request interceptor:', e);
+      return config;
     }
-    return config;
   },
   (error) => Promise.reject(error)
 );
@@ -38,9 +31,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    console.log('API Error:', error.response?.status, error.response?.data);
+    
     if (error.response?.status === 401 || error.response?.status === 403) {
-      // clear all async storage
-      await AsyncStorage.clear();
+      // clear auth token
+      await AsyncStorage.removeItem('access_token');
+      
       Alert.alert('Session Expired', 'Please log in again.');
       router.push('/(auth)/login');
     }

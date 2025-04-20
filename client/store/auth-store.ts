@@ -3,20 +3,18 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@/types';
 import api from '@/utils/apiClient';
-import axios from 'axios';
 import { Alert } from 'react-native';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  isInitialized: boolean; // New flag to track if auth has been initialized
+  isInitialized: boolean;
+  token: string | null; // Added token to the state
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (userData: Partial<User>, password: string) => Promise<void>;
-  // Added function to check permissions
   hasPermission: (permission: string) => boolean;
-  // Initialize auth state
   initAuth: () => Promise<void>;
 }
 
@@ -57,19 +55,23 @@ const userPermissions = {
   ],
 };
 
-
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
       isAuthenticated: false,
       isLoading: false,
-      isInitialized: false, // Start as not initialized
+      isInitialized: false,
+      token: null, // Initialize token as null
       
-      // Initialize auth state - called when app starts
       initAuth: async () => {
-        // This will be called after hydration from storage
         set({ isInitialized: true });
+        
+        // Also ensure token is in AsyncStorage if we have one
+        const { token } = get();
+        if (token) {
+          await AsyncStorage.setItem('access_token', token);
+        }
       },
       
       login: async (email: string, password: string) => {
@@ -77,9 +79,18 @@ export const useAuthStore = create<AuthState>()(
         try {
           const res = await api.post('/login', { email, password });
       
-          if (res.status !== 200) Alert.alert('Error', 'Invalid credentials');
+          if (res.status !== 200) {
+            Alert.alert('Error', 'Invalid credentials');
+            set({ isLoading: false });
+            return;
+          }
       
           const userData = res.data.user;
+          const token = res.data.token; // Get token from response
+          
+          // Save token to AsyncStorage directly
+          await AsyncStorage.setItem('access_token', token);
+          
           const user: User = {
             _id: userData.id,
             name: userData.name,
@@ -93,7 +104,12 @@ export const useAuthStore = create<AuthState>()(
             eventsCount: userData.eventsCount,
           };
       
-          set({ user, isAuthenticated: true, isLoading: false });
+          set({ 
+            user, 
+            isAuthenticated: true, 
+            isLoading: false,
+            token // Store token in state
+          });
         } catch (error) {
           set({ isLoading: false });
           console.error('Login error:', error);
@@ -102,11 +118,14 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      
-      logout: () => {
+      logout: async () => {
+        // Clear the token from AsyncStorage
+        await AsyncStorage.removeItem('access_token');
+        
         set({
           user: null,
-          isAuthenticated: false
+          isAuthenticated: false,
+          token: null
         });
       },
 
@@ -132,10 +151,24 @@ export const useAuthStore = create<AuthState>()(
             password
           });
       
-          if (res.status !== 201) Alert.alert('Error', 'Failed to create user');
+          if (res.status !== 201) {
+            Alert.alert('Error', 'Failed to create user');
+            set({ isLoading: false });
+            return;
+          }
+          
+          // Get token from response - assuming it's returned like in the login response
+          const token = res.data.token;
+          
+          // Save token to AsyncStorage directly
+          if (token) {
+            await AsyncStorage.setItem('access_token', token);
+          } else {
+            console.warn('No token received during signup');
+          }
       
           const newUser: User = {
-            _id: res.data.user?.id || `u${Date.now()}`, // prefer API id if returned
+            _id: res.data.user?.id || `u${Date.now()}`,
             name,
             email,
             businessName,
@@ -150,7 +183,8 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: newUser,
             isAuthenticated: true,
-            isLoading: false
+            isLoading: false,
+            token // Store token in state
           });
       
         } catch (error) {
@@ -161,8 +195,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      
-      // Function to check if the current user has a specific permission
       hasPermission: (permission: string) => {
         const { user } = get();
         if (!user) return false;
@@ -175,7 +207,6 @@ export const useAuthStore = create<AuthState>()(
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
       onRehydrateStorage: () => (state) => {
-        // When storage is rehydrated, we need to initialize auth
         if (state) {
           state.initAuth();
         }
