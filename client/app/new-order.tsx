@@ -57,12 +57,13 @@ export default function NewOrderScreen() {
   }, [initialSupplierId, initialProductId]);
 
   const filteredProducts = products.filter(product =>
-    (selectedSupplier ? product?.supplierId?._id === selectedSupplier._id : true) &&
+    (selectedSupplier ? product.supplierId === selectedSupplier._id : true) &&
     (searchQuery
       ? product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase())
       : true)
   );
+  
 
   const addProductToOrder = (product: Product) => {
     const existingItemIndex = orderItems.findIndex(item => item.product._id === product._id);
