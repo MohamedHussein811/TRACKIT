@@ -146,6 +146,7 @@ export default function AddProductScreen() {
       // Create a file object that matches what the server expects
       const fileObj = {
         uri: productImage,
+        name: fileName,
         type: 'image/jpeg' // You might want to determine this dynamically based on the file
       };
       
