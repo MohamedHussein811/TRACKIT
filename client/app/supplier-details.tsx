@@ -1,29 +1,59 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert, FlatList, ActivityIndicator } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
-import { suppliers } from '@/mocks/suppliers';
-import { products } from '@/mocks/products';
 import { ArrowLeft, Star, Phone, Mail, MapPin, ShoppingCart, Package, Tag } from 'lucide-react-native';
 import { useAuthStore } from '@/store/auth-store';
 import ProductCard from '@/components/ProductCard';
+import { Product, User } from '@/types';
+import api from '@/utils/apiClient';
 
 export default function SupplierDetailsScreen() {
   const { id } = useLocalSearchParams();
+  const supplierId = typeof id === 'string' ? id : undefined;
   const router = useRouter();
   const { hasPermission } = useAuthStore();
+  
+  const [suppliers, setSuppliers] = useState<User[]>([]);
+  const [products, setProducts] = useState<Product[]>([]); // Replace with actual product type
+  const [loading, setLoading] = useState(true);
 
-  // Find the supplier by ID
-  const supplier = suppliers.find(s => s.id === id);
+  useEffect(() => {
+    if (!supplierId) return;
 
-  // Filter products by this supplier
-  const supplierProducts = products.filter(p => p.supplierId === id);
+    const fetchSuppliers = async () => {
+      try {
+        const res = await api.get('/suppliers');
+        const pro = await api.get('/products');
+        setSuppliers(res.data);
+        setProducts(pro.data);
+
+      } catch (err) {
+        console.error('Failed to fetch suppliers:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSuppliers();
+  }, [supplierId]);
+
+  const supplier = suppliers.find(s => s._id === supplierId);
+  const supplierProducts = products.filter(p => p.supplierId === supplierId);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ActivityIndicator size="large" color={Colors.primary.burgundy} />
+      </SafeAreaView>
+    );
+  }
 
   if (!supplier) {
     return (
       <SafeAreaView style={styles.container}>
-        <Stack.Screen 
+        <Stack.Screen
           options={{
             title: 'Supplier Not Found',
             headerLeft: () => (
@@ -31,15 +61,12 @@ export default function SupplierDetailsScreen() {
                 <ArrowLeft size={24} color={Colors.neutral.black} />
               </TouchableOpacity>
             ),
-          }} 
+          }}
         />
         <View style={styles.notFoundContainer}>
           <Package size={64} color={Colors.neutral.lightGray} />
           <Text style={styles.notFoundText}>Supplier not found</Text>
-          <TouchableOpacity 
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -48,37 +75,14 @@ export default function SupplierDetailsScreen() {
   }
 
   const handleContactSupplier = (method: 'phone' | 'email') => {
-    if (method === 'phone') {
-      Alert.alert(
-        'Contact Supplier',
-        `Call ${supplier.name} at ${supplier.phone}?`,
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          },
-          {
-            text: 'Call',
-            onPress: () => console.log('Calling supplier:', supplier.phone)
-          }
-        ]
-      );
-    } else {
-      Alert.alert(
-        'Contact Supplier',
-        `Email ${supplier.name} at ${supplier.email}?`,
-        [
-          {
-            text: 'Cancel',
-            style: 'cancel'
-          },
-          {
-            text: 'Email',
-            onPress: () => console.log('Emailing supplier:', supplier.email)
-          }
-        ]
-      );
-    }
+    const message = method === 'phone'
+      ? `Call ${supplier.name} at ${supplier.phone}?`
+      : `Email ${supplier.name} at ${supplier.email}?`;
+
+    Alert.alert('Contact Supplier', message, [
+      { text: 'Cancel', style: 'cancel' },
+      { text: method === 'phone' ? 'Call' : 'Email', onPress: () => console.log(`${method === 'phone' ? 'Calling' : 'Emailing'} supplier`) }
+    ]);
   };
 
   const handlePlaceOrder = () => {
@@ -86,18 +90,17 @@ export default function SupplierDetailsScreen() {
       Alert.alert('Permission Denied', 'You do not have permission to place orders');
       return;
     }
-    
-    // Navigate to order information screen first
-    router.push(`/order-information?supplierId=${supplier.id}`);
+
+    router.push(`/order-information?supplierId=${supplier._id}`);
   };
 
   const handleProductPress = (product: any) => {
-    router.push(`/product-details?id=${product.id}`);
+    router.push(`/product-details?id=${product._id}`);
   };
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           title: 'Supplier Details',
           headerLeft: () => (
@@ -105,82 +108,71 @@ export default function SupplierDetailsScreen() {
               <ArrowLeft size={24} color={Colors.neutral.black} />
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Image 
-          source={{ uri: supplier.image || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }} 
-          style={styles.supplierImage} 
+        <Image
+          source={{ uri: supplier.image || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }}
+          style={styles.supplierImage}
           resizeMode="cover"
         />
-        
+
         <View style={styles.supplierInfo}>
           <Text style={styles.supplierName}>{supplier.name}</Text>
-          
+
           <View style={styles.ratingContainer}>
             <Star size={16} color={Colors.status.warning} fill={Colors.status.warning} />
-            <Text style={styles.ratingText}>{supplier.rating.toFixed(1)}</Text>
+            <Text style={styles.ratingText}>{supplier.rating?.toFixed(1)}</Text>
             <Text style={styles.productsCount}>({supplier.productsCount} products)</Text>
           </View>
-          
+
           <View style={styles.categoriesContainer}>
-            {supplier.categories.map((category, index) => (
+            {supplier.categories?.map((category, index) => (
               <View key={index} style={styles.categoryBadge}>
                 <Tag size={14} color={Colors.neutral.darkGray} style={styles.categoryIcon} />
                 <Text style={styles.categoryText}>{category}</Text>
               </View>
             ))}
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <Text style={styles.sectionTitle}>Contact Information</Text>
-          
+
           <View style={styles.contactItem}>
-            <Phone size={20} color={Colors.primary.burgundy} style={styles.contactIcon} />
+            <Phone size={20} color={Colors.primary.burgundy} />
             <Text style={styles.contactText}>{supplier.phone}</Text>
-            <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={() => handleContactSupplier('phone')}
-            >
+            <TouchableOpacity onPress={() => handleContactSupplier('phone')}>
               <Text style={styles.contactButtonText}>Call</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.contactItem}>
-            <Mail size={20} color={Colors.primary.burgundy} style={styles.contactIcon} />
+            <Mail size={20} color={Colors.primary.burgundy} />
             <Text style={styles.contactText}>{supplier.email}</Text>
-            <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={() => handleContactSupplier('email')}
-            >
+            <TouchableOpacity onPress={() => handleContactSupplier('email')}>
               <Text style={styles.contactButtonText}>Email</Text>
             </TouchableOpacity>
           </View>
-          
+
           <View style={styles.contactItem}>
-            <MapPin size={20} color={Colors.primary.burgundy} style={styles.contactIcon} />
+            <MapPin size={20} color={Colors.primary.burgundy} />
             <Text style={styles.contactText}>{supplier.address}</Text>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.productsHeader}>
             <Text style={styles.sectionTitle}>Products</Text>
             <Text style={styles.productsCount}>{supplierProducts.length} items</Text>
           </View>
         </View>
-        
+
         <FlatList
           data={supplierProducts}
-          renderItem={({ item }) => (
-            <ProductCard 
-              product={item} 
-              onPress={handleProductPress} 
-            />
-          )}
-          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ProductCard product={item} onPress={handleProductPress} />}
+          keyExtractor={(item) => item._id}
           contentContainerStyle={styles.productsList}
           scrollEnabled={false}
           ListEmptyComponent={() => (
@@ -191,19 +183,19 @@ export default function SupplierDetailsScreen() {
           )}
         />
       </ScrollView>
-      
+
       <View style={styles.footer}>
-        <TouchableOpacity 
-          style={styles.orderButton}
-          onPress={handlePlaceOrder}
-        >
-          <ShoppingCart size={20} color={Colors.neutral.white} style={styles.orderButtonIcon} />
+        <TouchableOpacity style={styles.orderButton} onPress={handlePlaceOrder}>
+          <ShoppingCart size={20} color={Colors.neutral.white} />
           <Text style={styles.orderButtonText}>Place Order</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 }
+
+// Add your styles below as you had them, or let me know if you need them rebuilt too.
+
 
 const styles = StyleSheet.create({
   container: {
