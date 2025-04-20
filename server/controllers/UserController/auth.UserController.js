@@ -73,7 +73,6 @@ export const createUser = async (req, res) => {
       process.env.SECRET
     );
     res.cookie("access_token", token, {
-      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24, // 1 day
@@ -152,7 +151,6 @@ export const login = async (req, res) => {
       process.env.SECRET
     );
     res.cookie("access_token", token, {
-      httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24, // 1 day
