@@ -1,0 +1,41 @@
+{
+  "name": "trackit-server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "nodemon index.js",
+    "lint": "next lint",
+    "env-cmd": "env-cmd -f dev.env nodemon index.js"
+  },
+  "dependencies": {
+    "axios": "^1.8.2",
+    "bcrypt": "^5.1.1",
+    "cloudinary": "^2.5.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "env-cmd": "^10.1.0",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "fuzzysort": "^3.1.0",
+    "google-auth-library": "^9.15.1",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "next": "15.2.1",
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
+    "punycode": "^2.3.1",
+    "redis": "^4.7.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.13.9",
+    "eslint": "^9.21.0",
+    "eslint-config-next": "15.2.1",
+    "typescript": "5.8.2"
+  }
+}

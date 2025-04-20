@@ -1,0 +1,119 @@
+import Order from "../../models/Orders.js";
+import Product from '../../models/Products.js';
+import Event from "../../models/Events.js";
+export const allOrders = async (req, res) => {
+  try {
+    // Fetch all orders from the database, optionally you can sort or paginate
+    const orders = await Order.find().populate('supplierId').populate('items.productId').exec();
+
+    // If no orders are found
+    if (orders.length === 0) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+
+    // Send the orders as the response
+    console.log("Fetched orders:", orders);
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const changeOrderStatus = async (req, res) => {
+  try {
+    const { orderId, status } = req.body;
+
+    // Validate input
+    if (!orderId || !status) {
+      return res.status(400).json({ message: "Order ID and status are required" });
+    }
+
+    // Find the order by ID
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      console.log("Order not found:", orderId);
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Update the order status
+    order.status = status;
+
+    // Save the updated order
+    await order.save();
+        res.status(200).json({ message: "Order status updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+
+export const getDashboardStats = async (req, res) => {
+  try {
+    // Get total products
+    const totalProducts = await Product.countDocuments();
+
+    // Get low stock items
+    const lowStockItems = await Product.countDocuments({ quantity: { $lte: 5 } });
+
+    // Get pending orders
+    const pendingOrders = await Order.countDocuments({ status: 'pending' });
+
+    // Get upcoming events length (assuming you have an events collection)
+    const upcomingEvents = await Event.countDocuments();
+     
+
+    // Get recent sales (example: calculate total sales in the last 30 days)
+    const recentSalesData = await Order.aggregate([
+      { $match: { createdAt: { $gte: new Date(new Date().setDate(new Date().getDate() - 30)) } } },
+      { $group: { _id: null, totalSales: { $sum: '$totalAmount' } } }
+    ]);
+
+    const recentSales = {
+      amount: recentSalesData.length ? recentSalesData[0].totalSales : 0,
+      change: 8.5, // Placeholder for change, you can calculate the change in sales over a period
+    };
+
+    // Get top products by sales (most sold products in the last 30 days)
+    const topProducts = await Order.aggregate([
+      { $unwind: '$items' },
+      { $group: { _id: '$items.productId', totalQuantity: { $sum: '$items.quantity' } } },
+      { $sort: { totalQuantity: -1 } },
+      { $limit: 3 },
+      {
+        $lookup: {
+          from: 'products',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'productInfo'
+        }
+      },
+      { $unwind: '$productInfo' },
+      {
+        $project: {
+          name: '$productInfo.name',
+          quantity: '$totalQuantity',
+        }
+      }
+    ]);
+
+    // Prepare the final stats object
+    const dashboardStats = {
+      totalProducts,
+      lowStockItems,
+      pendingOrders,
+      upcomingEvents,
+      recentSales,
+      topProducts,
+    };
+
+    // Send the response
+    res.status(200).json(dashboardStats);
+  } catch (error) {
+    console.error('Error fetching dashboard stats:', error);
+    res.status(500).json({ message: 'Error fetching dashboard stats' });
+  }
+};
+
