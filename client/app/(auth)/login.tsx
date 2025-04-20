@@ -132,7 +132,7 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={styles.loginButton}
               onPress={handleLogin}
-              disabled={isLoading}
+              //disabled={isLoading}
             >
               {isLoading ? (
                 <ActivityIndicator color={Colors.neutral.white} />
