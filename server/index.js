@@ -1,11 +1,9 @@
-// index.js
 import express, { json } from "express";
 import cors from "cors";
 import routes from "./routes/routes.js";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
-import http from "http";
 import bodyParser from "body-parser";
 import axios from "axios";
 axios.defaults.withCredentials = true;
@@ -13,7 +11,7 @@ axios.defaults.baseURL = process.env.BASE_URL;
 dotenv.config();
 
 const allowedOrigins = [
-  "*",
+  process.env.CLIENT_URL,
 ];
 const app = express();
 
@@ -31,22 +29,39 @@ app.use(cookieParser());
 
 const uri = process.env.MONGODB_URI;
 
-mongoose
-  .connect(uri)
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((error) => {
-    console.error("Error connecting to MongoDB:", error.message);
+function setupMongooseEvents() {
+  mongoose.connection.on('connected', () => {
+    console.log('Mongoose connected to DB');
   });
 
-const server = http.createServer(app);
+  mongoose.connection.on('error', (err) => {
+    console.error(`Mongoose connection error: ${err}`);
+  });
 
-// Use routes without calling it as a function
+  mongoose.connection.on('disconnected', () => {
+    console.log('Mongoose disconnected from DB');
+    setTimeout(() => {
+      mongoose.connect(uri)
+        .catch(err => console.error('Reconnection failed:', err));
+    }, 5000);
+  });
+}
+
+// Connect to database once when the module is loaded
+setupMongooseEvents();
+mongoose.connect(uri)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch(error => console.error("Initial connection error:", error.message));
+
 app.use("/", routes);
 
-// Start the server with a default port fallback
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
+// This is what Vercel needs
+export default app;
