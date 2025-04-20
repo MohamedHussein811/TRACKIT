@@ -3,19 +3,20 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@/types';
 import api from '@/utils/apiClient';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   isInitialized: boolean;
-  token: string | null; // Added token to the state
+  token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   hasPermission: (permission: string) => boolean;
   initAuth: () => Promise<void>;
+  setToken: (token: string) => Promise<void>; // New helper function
 }
 
 // Define permissions for different user types
@@ -62,15 +63,40 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       isInitialized: false,
-      token: null, // Initialize token as null
+      token: null,
+      
+      // Helper function to set token both in state and AsyncStorage
+      setToken: async (token: string) => {
+        try {
+          // First, ensure token is saved to AsyncStorage
+          await AsyncStorage.setItem('access_token', token);
+          console.log('Token saved to AsyncStorage');
+          
+          // Then update state
+          set({ token });
+          
+          return Promise.resolve();
+        } catch (e) {
+          console.error('Failed to set token:', e);
+          return Promise.reject(e);
+        }
+      },
       
       initAuth: async () => {
-        set({ isInitialized: true });
-        
-        // Also ensure token is in AsyncStorage if we have one
-        const { token } = get();
-        if (token) {
-          await AsyncStorage.setItem('access_token', token);
+        try {
+          // Check if we have a token in AsyncStorage
+          const storedToken = await AsyncStorage.getItem('access_token');
+          if (storedToken && (!get().token || get().token !== storedToken)) {
+            console.log('Found token in AsyncStorage during init, updating state');
+            set({ token: storedToken });
+          }
+          
+          set({ isInitialized: true });
+          return Promise.resolve();
+        } catch (e) {
+          console.error('Error in initAuth:', e);
+          set({ isInitialized: true });
+          return Promise.resolve();
         }
       },
       
@@ -86,10 +112,10 @@ export const useAuthStore = create<AuthState>()(
           }
       
           const userData = res.data.user;
-          const token = res.data.token; // Get token from response
+          const token = res.data.token;
           
-          // Save token to AsyncStorage directly
-          await AsyncStorage.setItem('access_token', token);
+          // Save token using our helper
+          await get().setToken(token);
           
           const user: User = {
             _id: userData.id,
@@ -107,8 +133,7 @@ export const useAuthStore = create<AuthState>()(
           set({ 
             user, 
             isAuthenticated: true, 
-            isLoading: false,
-            token // Store token in state
+            isLoading: false
           });
         } catch (error) {
           set({ isLoading: false });
@@ -119,14 +144,18 @@ export const useAuthStore = create<AuthState>()(
       },
       
       logout: async () => {
-        // Clear the token from AsyncStorage
-        await AsyncStorage.removeItem('access_token');
-        
-        set({
-          user: null,
-          isAuthenticated: false,
-          token: null
-        });
+        try {
+          // Clear the token from AsyncStorage
+          await AsyncStorage.removeItem('access_token');
+          
+          set({
+            user: null,
+            isAuthenticated: false,
+            token: null
+          });
+        } catch (e) {
+          console.error('Error in logout:', e);
+        }
       },
 
       signup: async (userData: Partial<User>, password: string) => {
@@ -134,8 +163,7 @@ export const useAuthStore = create<AuthState>()(
       
         try {
           console.log('userData', userData);
-          console.log('password', password);
-      
+          
           const name = userData.name || '';
           const email = userData.email || '';
           const businessName = userData.businessName || '';
@@ -157,14 +185,25 @@ export const useAuthStore = create<AuthState>()(
             return;
           }
           
-          // Get token from response - assuming it's returned like in the login response
+          // Get token from response
           const token = res.data.token;
           
-          // Save token to AsyncStorage directly
           if (token) {
-            await AsyncStorage.setItem('access_token', token);
+            console.log('Signup successful, got token');
+            // Use our helper to ensure token is saved properly
+            await get().setToken(token);
           } else {
-            console.warn('No token received during signup');
+            console.warn('No token received during signup, attempting login');
+            
+            // If no token is returned from signup, try to login immediately
+            try {
+              const loginRes = await api.post('/login', { email, password });
+              if (loginRes.status === 200 && loginRes.data.token) {
+                await get().setToken(loginRes.data.token);
+              }
+            } catch (loginErr) {
+              console.error('Auto-login after signup failed:', loginErr);
+            }
           }
       
           const newUser: User = {
@@ -183,9 +222,13 @@ export const useAuthStore = create<AuthState>()(
           set({
             user: newUser,
             isAuthenticated: true,
-            isLoading: false,
-            token // Store token in state
+            isLoading: false
           });
+          
+          // iOS specific workaround - add a small delay
+          if (Platform.OS === 'ios') {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
       
         } catch (error) {
           set({ isLoading: false });
@@ -206,9 +249,17 @@ export const useAuthStore = create<AuthState>()(
     {
       name: 'auth-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+        token: state.token,
+      }),
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.initAuth();
+          // We need to run initAuth after rehydration
+          setTimeout(() => {
+            state.initAuth();
+          }, 0);
         }
       }
     }
