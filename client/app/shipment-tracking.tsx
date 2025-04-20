@@ -1,20 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
 import Colors from '@/constants/colors';
 import { X, Package, Truck, CheckCircle, Clock, MapPin, Calendar } from 'lucide-react-native';
-import { orders } from '@/mocks/orders';
 import { LinearGradient } from 'expo-linear-gradient';
+import api from '@/utils/apiClient';
 
 // HIGHLIGHT: New shipment tracking screen
 export default function ShipmentTrackingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const orderId = params.id as string;
+  const [orders,setOrders] = useState([]);
+
+
+  useEffect(() => {
+    // Fetch suppliers from the API
+    const fetchSups = async () => {
+      try {
+        const resOrders = await api.get<any[]>('/moderator/orders');
+        setOrders(resOrders.data.orders);
+      } catch (error) {
+        console.error('Error fetching suppliers:', error);
+      }
+    };
+
+    fetchSups();
+  }, []);
   
   // Find the order from mock data
-  const order = orders.find(o => o.id === orderId);
+  const order = orders.find(o => o._id === orderId);
   
   if (!order) {
     return (
