@@ -184,12 +184,12 @@ export default function SupplierDetailsScreen() {
         />
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/*<View style={styles.footer}>
         <TouchableOpacity style={styles.orderButton} onPress={handlePlaceOrder}>
           <ShoppingCart size={20} color={Colors.neutral.white} />
           <Text style={styles.orderButtonText}>Place Order</Text>
         </TouchableOpacity>
-      </View>
+      </View>*/}
     </SafeAreaView>
   );
 }
