@@ -56,8 +56,22 @@ export const getDashboardStats = async (req, res) => {
     const totalProducts = await Product.countDocuments();
 
     // Get low stock items
-    const lowStockItems = await Product.countDocuments({ quantity: { $lte: 5 } });
-
+    const lowStockItemsData = await Product.aggregate([
+      {
+        $match: {
+          $expr: {
+            $and: [
+              { $lt: ['$quantity', '$minStockLevel'] },
+              { $gt: ['$quantity', 0] }
+            ]
+          }
+        }
+      },
+      { $count: 'count' }
+    ]);
+    
+    const lowStockItems = lowStockItemsData.length ? lowStockItemsData[0].count : 0;
+    
     // Get pending orders
     const pendingOrders = await Order.countDocuments({ status: 'pending' });
 

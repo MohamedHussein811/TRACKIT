@@ -16,7 +16,7 @@ export default function OutOfStockScreen() {
   const handleProductPress = (product: Product) => {
     router.push({
       pathname: '/product-details',
-      params: { id: product.id }
+      params: { id: product._id }
     });
   };
   
@@ -34,7 +34,7 @@ export default function OutOfStockScreen() {
           onPress: () => {
             router.push({
               pathname: '/new-order',
-              params: { productId: product.id }
+              params: { productId: product._id }
             });
           }
         }
@@ -122,7 +122,7 @@ export default function OutOfStockScreen() {
       <FlatList
         data={outOfStockProducts}
         renderItem={renderProductItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={() => (

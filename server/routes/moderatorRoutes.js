@@ -1,7 +1,4 @@
 import { Router } from "express";
-import {
-  authenticateToken,
-} from "../middleware/authenticateToken.js";
 
 import {
   allOrders,
@@ -13,13 +10,11 @@ const router = Router();
 
 router.get(
   "/moderator/dashboard",
-  authenticateToken,
   getDashboardStats
 );
-router.get("/moderator/orders", authenticateToken, allOrders);
+router.get("/moderator/orders", allOrders);
 router.put(
   "/supplier/orders/update-status",
-  authenticateToken,
   changeOrderStatus
 );
 
