@@ -44,7 +44,11 @@ const productSchema = new Schema({
   supplierId: {
     type: Schema.Types.ObjectId,
     ref: "users",
-  }
+  },
+  ownerId: {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+  },
 }, { timestamps: true });
 
 const Product = model("Product", productSchema);

@@ -4,8 +4,14 @@ import User from "../../models/Users.js";
 // Create a new product
 export const createProduct = async (req, res) => {
   try {
+    const userId = req.userId; // Assuming you have userId in req object
     console.log("Creating product with data:", req.body);
-    const newProduct = new Product(req.body);
+
+    const newProduct = new Product({
+      ...req.body,
+      ownerId: userId, // Set the ownerId to the logged-in user's ID
+    });
+
     const savedProduct = await newProduct.save();
     console.log("Product created successfully:", savedProduct);
     res.status(201).json(savedProduct);

@@ -47,10 +47,6 @@ export const createOrder = async (req, res) => {
   }
 };
 
-
-import mongoose from "mongoose";
-
-
 export const getOrders = async (req, res) => {
   try {
     const userId = req.userId;

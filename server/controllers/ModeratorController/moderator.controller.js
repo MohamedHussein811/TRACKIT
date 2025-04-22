@@ -40,6 +40,25 @@ export const changeOrderStatus = async (req, res) => {
     // Update the order status
     order.status = status;
 
+    // inside the items array, update the quantity of each product
+    for (const item of order.items) {
+      const product = await Product.findById(item.productId);
+
+      if (product) {
+        if(status === 'shipped') {
+          // Decrease the product quantity
+          product.quantity -= item.quantity;
+        }
+        else if(status === 'cancelled') {
+          // Increase the product quantity
+          product.quantity += item.quantity;
+        }
+        // Save the updated product
+        await product.save();
+      }
+    }
+
+
     // Save the updated order
     await order.save();
         res.status(200).json({ message: "Order status updated successfully" });
