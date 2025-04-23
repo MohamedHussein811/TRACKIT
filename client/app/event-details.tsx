@@ -76,11 +76,9 @@ export default function EventDetailsScreen() {
           {
             text: "Register",
             onPress: () =>
-              Alert.alert(
-                "Success",
-                "You've successfully registered!",
-                [{ text: "OK" }]
-              ),
+              Alert.alert("Success", "You've successfully registered!", [
+                { text: "OK" },
+              ]),
           },
         ]
       );
@@ -122,9 +120,16 @@ export default function EventDetailsScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Event Image and Actions */}
         <View style={styles.imageContainer}>
-          <Image source={{ uri: event.image }} style={styles.eventImage} resizeMode="cover" />
+          <Image
+            source={{ uri: event.image }}
+            style={styles.eventImage}
+            resizeMode="cover"
+          />
 
-          <TouchableOpacity style={styles.backIconButton} onPress={() => router.back()}>
+          <TouchableOpacity
+            style={styles.backIconButton}
+            onPress={() => router.back()}
+          >
             <View style={styles.iconBackground}>
               <ArrowLeft size={20} color={Colors.neutral.black} />
             </View>
@@ -161,8 +166,10 @@ export default function EventDetailsScreen() {
             <InfoItem icon={Calendar} text={formatDate(event.date)} />
             <InfoItem icon={Clock} text={event.time} />
             <InfoItem icon={MapPin} text={event.location} />
-            <InfoItem icon={User} text={`Organized by ${event?.organizer}`} />
-            {event.attendees && <InfoItem icon={Users} text={`${event.attendees} Attendees`} />}
+            <InfoItem icon={User} text={`Organized by ${event?.organizerId}`} />
+            {event.attendees && (
+              <InfoItem icon={Users} text={`${event.attendees} Attendees`} />
+            )}
           </View>
 
           <View style={styles.descriptionSection}>
@@ -173,7 +180,9 @@ export default function EventDetailsScreen() {
           <View style={styles.priceSection}>
             <Text style={styles.priceLabel}>Price</Text>
             <Text style={styles.price}>
-              {!event.price || event.price === 0 ? "Free" : `$${event.price.toFixed(2)}`}
+              {!event.price || event.price === 0
+                ? "Free"
+                : `$${event.price.toFixed(2)}`}
             </Text>
           </View>
         </View>
@@ -181,11 +190,17 @@ export default function EventDetailsScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity
-          style={[styles.registerButton, event.isRegistered && styles.registeredButton]}
+          style={[
+            styles.registerButton,
+            event.isRegistered && styles.registeredButton,
+          ]}
           onPress={handleRegister}
         >
           <Text
-            style={[styles.registerButtonText, event.isRegistered && styles.registeredButtonText]}
+            style={[
+              styles.registerButtonText,
+              event.isRegistered && styles.registeredButtonText,
+            ]}
           >
             {event.isRegistered ? "Already Registered" : "Register Now"}
           </Text>
@@ -199,10 +214,15 @@ export default function EventDetailsScreen() {
             <Text style={styles.promptTitle}>Register for Event</Text>
             <Text style={styles.promptDescription}>
               Would you like to register for "{event.title}"?
-              {event && event.price && event.price > 0 ? `\n\nPrice: $${event?.price?.toFixed(2)}` : ""}
+              {event && event.price && event.price > 0
+                ? `\n\nPrice: $${event?.price?.toFixed(2)}`
+                : ""}
             </Text>
             <View style={styles.promptButtons}>
-              <TouchableOpacity onPress={() => setShowPrompt(false)} style={styles.promptCancelButton}>
+              <TouchableOpacity
+                onPress={() => setShowPrompt(false)}
+                style={styles.promptCancelButton}
+              >
                 <Text style={styles.promptCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity

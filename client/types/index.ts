@@ -3,7 +3,7 @@ export interface User {
   name: string;
   email: string;
   businessName?: string;
-  userType: 'business' | 'supplier' | 'distributor' | 'organizer';
+  userType: "business" | "supplier" | "distributor" | "organizer";
   avatar?: string;
   phone?: string;
   address?: string;
@@ -75,7 +75,14 @@ export interface Order {
   supplierId: string;
   supplierName: string;
   businessName?: string; // Added businessName property
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled' | 'new' | 'processing';
+  status:
+    | "pending"
+    | "confirmed"
+    | "shipped"
+    | "delivered"
+    | "cancelled"
+    | "new"
+    | "processing";
   items: OrderItem[];
   totalAmount: number;
   createdAt: string;
@@ -110,11 +117,12 @@ export interface Event {
   date: string;
   time: string;
   location: string;
-  organizer: string;
+  organizerId: string;
+  organizerName?: string;
   image?: string;
   category?: string; // Added category property
   price?: number; // Added price property
-  status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  status: "upcoming" | "ongoing" | "completed" | "cancelled";
   attendees?: number;
   isBooked?: boolean;
   isRegistered?: boolean;
@@ -124,7 +132,7 @@ export interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'warning' | 'success' | 'error';
+  type: "info" | "warning" | "success" | "error";
   read: boolean;
   createdAt: string;
 }
@@ -138,11 +146,13 @@ export interface DashboardStats {
   monthlySales?: MonthlySales[];
   topSellingProducts?: TopSellingProduct[];
   recentOrders?: Order[];
-  topProducts?: { // Added topProducts property
+  topProducts?: {
+    // Added topProducts property
     name: string;
     quantity: number;
   }[];
-  recentSales?: { // Added recentSales property
+  recentSales?: {
+    // Added recentSales property
     amount: number;
     change: number;
   };

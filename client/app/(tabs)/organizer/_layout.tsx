@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Slot, Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/auth-store";
 import Colors from "@/constants/colors";
 import {
@@ -10,7 +10,7 @@ import {
   User,
   Store,
 } from "lucide-react-native";
-/*
+
 export default function TabLayoutOragnizer() {
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
@@ -116,23 +116,4 @@ export default function TabLayoutOragnizer() {
       />
     </Tabs>
   );
-}
-  */
-// app/(tabs)/_layout.tsx
-
-export default function TabsLayout() {
-  const { user, isAuthenticated } = useAuthStore();
-  const router = useRouter();
-  const userType = user?.userType || "business";
-
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.replace("/(auth)/login");
-    } else if (userType === "organizer") {
-      router.replace("/(tabs)/organizer" as any);
-    }
-    // Add additional user type checks as needed
-  }, [isAuthenticated, userType]);
-
-  return <Slot />;
 }

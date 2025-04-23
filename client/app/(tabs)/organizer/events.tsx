@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  Button,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -39,7 +40,12 @@ export default function EventsScreen() {
   // Combine original events with additional events
   const allEvents = [...events];
 
-  const upcomingEvents = allEvents;
+  const upcomingEvents = allEvents.filter(
+    (event) => new Date(event.date) >= new Date()
+  );
+  const pastEvents = allEvents.filter(
+    (event) => new Date(event.date) < new Date()
+  );
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -429,7 +435,7 @@ Price: $${ticket.price.toFixed(2)}`,
         />
       ) : (
         <FlatList
-          data={activeTab === "upcoming" && upcomingEvents}
+          data={activeTab === "upcoming" ? upcomingEvents : pastEvents}
           renderItem={renderEventCard}
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
@@ -446,6 +452,7 @@ Price: $${ticket.price.toFixed(2)}`,
           <View style={styles.addButtonGradient}>
             <Text style={styles.addButtonText}>+</Text>
           </View>
+          <Text>dhdhdh</Text>
         </TouchableOpacity>
       )}
     </SafeAreaView>
