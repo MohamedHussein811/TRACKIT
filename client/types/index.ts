@@ -117,7 +117,7 @@ export interface Event {
   date: string;
   time: string;
   location: string;
-  organizerId: string;
+  organizerId?: string;
   organizerName?: string;
   image?: string;
   category?: string; // Added category property

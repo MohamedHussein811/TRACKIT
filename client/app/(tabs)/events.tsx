@@ -59,10 +59,16 @@ export default function EventsScreen() {
   };
 
   const handleReserveSpot = (event: Event) => {
-    if (event.isRegistered) {
+    const isPurchased = soldTickets.some(
+      (ticket) =>
+        ticket.attendeeName === user?.name &&
+        ticket.attendeeEmail === user?.email
+    );
+    if (isPurchased) {
       // If already registered, just view details
       handleEventPress(event);
     } else {
+      console.log(user?.email);
       // If not registered, show confirmation dialog
       Alert.alert(
         "Reserve Spot",
@@ -126,7 +132,7 @@ Price: $${ticket.price.toFixed(2)}`,
       [{ text: "OK" }]
     );
   };
-
+  /*
   const renderEventCard = ({ item }: { item: Event }) => (
     <TouchableOpacity
       style={styles.eventCard}
@@ -206,6 +212,192 @@ Price: $${ticket.price.toFixed(2)}`,
       </View>
     </TouchableOpacity>
   );
+  */
+  /*
+  const renderEventCard = ({ item }: { item: Event }) => {
+    // Check if the user has already reserved a spot for this event
+    const isPurchased = soldTickets.some(
+      (ticket) =>
+        ticket.attendeeEmail === user?.email &&
+        ticket.attendeeName === user?.name
+    );
+
+    return (
+      <TouchableOpacity
+        style={styles.eventCard}
+        onPress={() => handleEventPress(item)}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={{ uri: item.image }}
+          style={styles.eventImage}
+          resizeMode="cover"
+        />
+        {isPurchased && (
+          <View style={styles.registeredBadge}>
+            <Text style={styles.registeredText}>Reserved</Text>
+          </View>
+        )}
+
+        <View style={styles.eventContent}>
+          <Text style={styles.eventTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={styles.eventCategory}>{item.category || "General"}</Text>
+
+          <View style={styles.eventDetails}>
+            <View style={styles.eventDetailItem}>
+              <Calendar
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText}>
+                {formatDate(item.date)}
+              </Text>
+            </View>
+
+            <View style={styles.eventDetailItem}>
+              <Clock
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText}>{item.time}</Text>
+            </View>
+
+            <View style={styles.eventDetailItem}>
+              <MapPin
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText} numberOfLines={1}>
+                {item.location}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.eventFooter}>
+            <Text style={styles.eventPrice}>
+              {item.price === 0 || item.price === undefined
+                ? "Free"
+                : `$${item.price}`}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.eventButton,
+                isPurchased && styles.registeredButton,
+              ]}
+              onPress={() => handleReserveSpot(item)}
+            >
+              <Text
+                style={[
+                  styles.eventButtonText,
+                  isPurchased && styles.registeredButtonText,
+                ]}
+              >
+                {isPurchased ? "View Details" : "Reserve Spot"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+  */
+  const renderEventCard = ({ item }: { item: Event }) => {
+    console.log(user?.name);
+    // Check if the user has already reserved a spot for this event
+    const isPurchased = soldTickets.some(
+      (ticket) =>
+        ticket.attendeeName === user?.name &&
+        ticket.attendeeEmail === user?.email
+    );
+
+    return (
+      <TouchableOpacity
+        style={styles.eventCard}
+        onPress={() => handleEventPress(item)}
+        activeOpacity={0.7}
+      >
+        <Image
+          source={{ uri: item.image }}
+          style={styles.eventImage}
+          resizeMode="cover"
+        />
+        {isPurchased && (
+          <View style={styles.registeredBadge}>
+            <Text style={styles.registeredText}>Reserved</Text>
+          </View>
+        )}
+
+        <View style={styles.eventContent}>
+          <Text style={styles.eventTitle} numberOfLines={1}>
+            {item.title}
+          </Text>
+          <Text style={styles.eventCategory}>{item.category || "General"}</Text>
+
+          <View style={styles.eventDetails}>
+            <View style={styles.eventDetailItem}>
+              <Calendar
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText}>
+                {formatDate(item.date)}
+              </Text>
+            </View>
+
+            <View style={styles.eventDetailItem}>
+              <Clock
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText}>{item.time}</Text>
+            </View>
+
+            <View style={styles.eventDetailItem}>
+              <MapPin
+                size={16}
+                color={Colors.neutral.gray}
+                style={styles.eventDetailIcon}
+              />
+              <Text style={styles.eventDetailText} numberOfLines={1}>
+                {item.location}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.eventFooter}>
+            <Text style={styles.eventPrice}>
+              {item.price === 0 || item.price === undefined
+                ? "Free"
+                : `$${item.price}`}
+            </Text>
+            <TouchableOpacity
+              style={[
+                styles.eventButton,
+                isPurchased && styles.registeredButton,
+              ]}
+              onPress={() => handleReserveSpot(item)}
+            >
+              <Text
+                style={[
+                  styles.eventButtonText,
+                  isPurchased && styles.registeredButtonText,
+                ]}
+              >
+                {isPurchased ? "View Details" : "Reserve Spot"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderEventRequestCard = ({ item }: { item: any }) => (
     <View style={styles.requestCard}>
@@ -604,6 +796,12 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: Colors.neutral.white,
+  },
+  backIconButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 10,
   },
   // Event request card styles
   requestCard: {

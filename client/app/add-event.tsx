@@ -116,7 +116,7 @@ export default function AddEventScreen() {
         }
 
         const imageData = await imageResponse.json();
-        console.log("Image upload successful:", imageData);
+
         imageUrl = imageData.secure_url;
       } catch (error) {
         console.error("Image upload exception:", error);

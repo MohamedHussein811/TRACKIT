@@ -166,7 +166,10 @@ export default function EventDetailsScreen() {
             <InfoItem icon={Calendar} text={formatDate(event.date)} />
             <InfoItem icon={Clock} text={event.time} />
             <InfoItem icon={MapPin} text={event.location} />
-            <InfoItem icon={User} text={`Organized by ${event?.organizerId}`} />
+            <InfoItem
+              icon={User}
+              text={`Organized by ${event?.organizerName}`}
+            />
             {event.attendees && (
               <InfoItem icon={Users} text={`${event.attendees} Attendees`} />
             )}
