@@ -7,15 +7,14 @@ import { getClientIP } from "../../config/client-ip.js";
 
 export const createUser = async (req, res) => {
   try {
-    const { name,email,businessName,userType,avatar,password } = req.body;
+    const { name, email, businessName, userType, avatar, password, rememberMe } = req.body;
 
-    if(!name || !email) {
+    if (!name || !email) {
       console.log("Name or email is missing");
       return res.status(400).json({
         message: "Name and email are required fields.",
       });
     }
-
 
     if (!password || password.length < 8) {
       console.log("Password is missing or too short");
@@ -24,7 +23,6 @@ export const createUser = async (req, res) => {
       });
     }
 
-
     if (email.length >= 50) {
       console.log("Email is too long");
       return res.status(400).json({
@@ -32,22 +30,21 @@ export const createUser = async (req, res) => {
       });
     }
 
-    // Check if user with the provided name exists
-    const user = await User.findOne({ email });
-    if (user) {
+    // Check if user with the provided email exists
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
       console.log("User with the provided email already exists");
       return res.status(400).json({
         message: "User with the provided email already exists.",
       });
     }
 
-    // Check if user with the provided email exists
-
-    const emailExists = await User.findOne({ email });
-    if (emailExists) {
-      console.log("User with the provided email already exists");
+    // Check if user with the provided name exists
+    const existingName = await User.findOne({ name });
+    if (existingName) {
+      console.log("User with the provided name already exists");
       return res.status(400).json({
-        message: "User with the provided email already exists.",
+        message: "User with the provided name already exists.",
       });
     }
 
@@ -69,23 +66,28 @@ export const createUser = async (req, res) => {
     await newUser.save();
 
     const token = jwt.sign(
-      { id: user._id, role: user.role },
+      { id: newUser._id, role: newUser.userType },
       process.env.SECRET
     );
+
     res.cookie("access_token", token, {
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
-      maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24, // 1 day
+      maxAge: rememberMe ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 24, // 1 week or 1 day
     });
 
-    return res
-      .status(201)
-      .json({ message: "User Created Successfully",token, UserID: newUser._id,user });
+    return res.status(201).json({
+      message: "User Created Successfully",
+      token,
+      userID: newUser._id,
+      user: newUser, // send the created user
+    });
+
   } catch (error) {
     console.error("Error creating user:", error);
-    return res
-      .status(201)
-      .json({ message: "Internal Server Error. Please Try again later." });
+    return res.status(500).json({
+      message: "Internal Server Error. Please try again later.",
+    });
   }
 };
 
