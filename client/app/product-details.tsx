@@ -1,12 +1,30 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '@/constants/colors';
-import { ArrowLeft, Edit, Trash2, ShoppingCart, AlertTriangle, Package, Truck, DollarSign, BarChart3 } from 'lucide-react-native';
-import { useAuthStore } from '@/store/auth-store';
-import api from '@/utils/apiClient';
-import { Product } from '@/types';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Colors from "@/constants/colors";
+import {
+  ArrowLeft,
+  Edit,
+  Trash2,
+  ShoppingCart,
+  AlertTriangle,
+  Package,
+  Truck,
+  DollarSign,
+  BarChart3,
+} from "lucide-react-native";
+import { useAuthStore } from "@/store/auth-store";
+import api from "@/utils/apiClient";
+import { Product } from "@/types";
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -21,31 +39,29 @@ export default function ProductDetailsScreen() {
       setIsLoading(true);
       const res = await api.get(`/products/${id}`);
       if (res.status === 200) {
-       
         setProduct(res.data);
-        console.log('Products fetched successfully:', res.data);
+        console.log("Products fetched successfully:", res.data);
       } else {
-        Alert.alert('Error', 'Failed to fetch products');
+        Alert.alert("Error", "Failed to fetch products");
       }
       setIsLoading(false);
     };
 
     fetchProducts();
-  }
-  , []);
+  }, []);
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Stack.Screen 
+        <Stack.Screen
           options={{
-            title: 'Loading...',
+            title: "Loading...",
             headerLeft: () => (
               <TouchableOpacity onPress={() => router.back()}>
                 <ArrowLeft size={24} color={Colors.neutral.black} />
               </TouchableOpacity>
             ),
-          }} 
+          }}
         />
         <View style={styles.notFoundContainer}>
           <Text style={styles.notFoundText}>Loading...</Text>
@@ -54,24 +70,23 @@ export default function ProductDetailsScreen() {
     );
   }
 
-
-  if(!product) {
+  if (!product) {
     return (
       <SafeAreaView style={styles.container}>
-        <Stack.Screen 
+        <Stack.Screen
           options={{
-            title: 'Product Not Found',
+            title: "Product Not Found",
             headerLeft: () => (
               <TouchableOpacity onPress={() => router.back()}>
                 <ArrowLeft size={24} color={Colors.neutral.black} />
               </TouchableOpacity>
             ),
-          }} 
+          }}
         />
         <View style={styles.notFoundContainer}>
           <Package size={64} color={Colors.neutral.lightGray} />
           <Text style={styles.notFoundText}>Product not found</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -86,68 +101,70 @@ export default function ProductDetailsScreen() {
   const isOutOfStock = product.quantity === 0;
 
   const handleEditProduct = () => {
-    if (!hasPermission('edit_product')) {
-      Alert.alert('Permission Denied', 'You do not have permission to edit products');
+    if (!hasPermission("edit_product")) {
+      Alert.alert(
+        "Permission Denied",
+        "You do not have permission to edit products"
+      );
       return;
     }
-    
+
     // Navigate to edit product screen
     router.push({
-      pathname: '/add-product',
-      params: { id: product._id, mode: 'edit' }
+      pathname: "/add-product",
+      params: { id: product._id, mode: "edit" },
     });
   };
 
   const handleDeleteProduct = () => {
-    if (!hasPermission('delete_product')) {
-      Alert.alert('Permission Denied', 'You do not have permission to delete products');
+    if (!hasPermission("delete_product")) {
+      Alert.alert(
+        "Permission Denied",
+        "You do not have permission to delete products"
+      );
       return;
     }
-    
+
     Alert.alert(
-      'Delete Product',
+      "Delete Product",
       `Are you sure you want to delete ${product.name}?`,
       [
         {
-          text: 'Cancel',
-          style: 'cancel'
+          text: "Cancel",
+          style: "cancel",
         },
         {
-          text: 'Delete',
-          style: 'destructive',
+          text: "Delete",
+          style: "destructive",
           onPress: () => {
             // In a real app, this would call an API to delete the product
-            Alert.alert(
-              'Success',
-              'Product deleted successfully',
-              [
-                {
-                  text: 'OK',
-                  onPress: () => router.back()
-                }
-              ]
-            );
-          }
-        }
+            Alert.alert("Success", "Product deleted successfully", [
+              {
+                text: "OK",
+                onPress: () => router.back(),
+              },
+            ]);
+          },
+        },
       ]
     );
   };
 
   const handleOrderProduct = () => {
     if (isOutOfStock) {
-      Alert.alert('Out of Stock', 'This product is currently out of stock');
+      Alert.alert("Out of Stock", "This product is currently out of stock");
       return;
     }
 
-    console.log(product.supplierId)
-    
+    console.log(product.supplierId);
+
     // Navigate to new order screen with this product pre-selected
     router.push({
-      pathname: '/new-order',
-      params: { 
-        supplierId: product?.supplierId?._id || '',
-        productId: product._id
-      }
+      pathname: "/new-order",
+      params: {
+        supplierId: product?.supplierId?._id || "",
+        productId: product._id,
+      },
     });
   };
 
@@ -155,7 +172,10 @@ export default function ProductDetailsScreen() {
     if (quantity < product.quantity) {
       setQuantity(quantity + 1);
     } else {
-      Alert.alert('Maximum Quantity', `Only ${product.quantity} items available in stock`);
+      Alert.alert(
+        "Maximum Quantity",
+        `Only ${product.quantity} items available in stock`
+      );
     }
   };
 
@@ -166,10 +186,10 @@ export default function ProductDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
         options={{
-          title: 'Product Details',
+          title: "Product Details",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <ArrowLeft size={24} color={Colors.neutral.black} />
@@ -177,16 +197,16 @@ export default function ProductDetailsScreen() {
           ),
           headerRight: () => (
             <View style={styles.headerActions}>
-              {hasPermission('edit_product') && (
-                <TouchableOpacity 
+              {hasPermission("edit_product") && (
+                <TouchableOpacity
                   style={styles.headerAction}
                   onPress={handleEditProduct}
                 >
                   <Edit size={20} color={Colors.neutral.darkGray} />
                 </TouchableOpacity>
               )}
-              {hasPermission('delete_product') && (
-                <TouchableOpacity 
+              {hasPermission("delete_product") && (
+                <TouchableOpacity
                   style={styles.headerAction}
                   onPress={handleDeleteProduct}
                 >
@@ -195,16 +215,27 @@ export default function ProductDetailsScreen() {
               )}
             </View>
           ),
-        }} 
+        }}
       />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Image 
-          source={{ uri: product.image }} 
-          style={styles.productImage} 
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
+        <Image
+          source={{ uri: product.image }}
+          style={styles.productImage}
           resizeMode="cover"
         />
-        
+        <TouchableOpacity
+          style={styles.backIconButton}
+          onPress={() => router.back()}
+        >
+          <View style={styles.iconBackground}>
+            <ArrowLeft size={20} color={Colors.neutral.black} />
+          </View>
+        </TouchableOpacity>
+
         <View style={styles.productInfo}>
           <View style={styles.header}>
             <View>
@@ -213,44 +244,50 @@ export default function ProductDetailsScreen() {
             </View>
             <Text style={styles.productPrice}>${product.price.toFixed(2)}</Text>
           </View>
-          
+
           <View style={styles.stockInfo}>
             <View style={styles.stockStatus}>
-              <Package size={16} color={isLowStock ? Colors.status.warning : Colors.neutral.gray} />
-              <Text style={[
-                styles.stockText,
-                isLowStock ? styles.lowStockText : null,
-                isOutOfStock ? styles.outOfStockText : null
-              ]}>
-                {isOutOfStock 
-                  ? 'Out of Stock' 
-                  : isLowStock 
-                    ? `Low Stock: ${product.quantity} remaining` 
-                    : `${product.quantity} in stock`
-                }
+              <Package
+                size={16}
+                color={isLowStock ? Colors.status.warning : Colors.neutral.gray}
+              />
+              <Text
+                style={[
+                  styles.stockText,
+                  isLowStock ? styles.lowStockText : null,
+                  isOutOfStock ? styles.outOfStockText : null,
+                ]}
+              >
+                {isOutOfStock
+                  ? "Out of Stock"
+                  : isLowStock
+                  ? `Low Stock: ${product.quantity} remaining`
+                  : `${product.quantity} in stock`}
               </Text>
             </View>
-            
+
             {isLowStock && !isOutOfStock && (
               <View style={styles.warningBadge}>
                 <AlertTriangle size={14} color={Colors.status.warning} />
                 <Text style={styles.warningText}>Low Stock</Text>
               </View>
             )}
-            
+
             {isOutOfStock && (
               <View style={[styles.warningBadge, styles.outOfStockBadge]}>
                 <AlertTriangle size={14} color={Colors.status.error} />
-                <Text style={[styles.warningText, styles.outOfStockText]}>Out of Stock</Text>
+                <Text style={[styles.warningText, styles.outOfStockText]}>
+                  Out of Stock
+                </Text>
               </View>
             )}
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <Text style={styles.sectionTitle}>Product Details</Text>
           <Text style={styles.description}>{product.description}</Text>
-          
+
           <View style={styles.detailsGrid}>
             <View style={styles.detailItem}>
               <View style={styles.detailIconContainer}>
@@ -259,15 +296,17 @@ export default function ProductDetailsScreen() {
               <Text style={styles.detailLabel}>SKU</Text>
               <Text style={styles.detailValue}>{product.sku}</Text>
             </View>
-            
+
             <View style={styles.detailItem}>
               <View style={styles.detailIconContainer}>
                 <DollarSign size={20} color={Colors.primary.burgundy} />
               </View>
               <Text style={styles.detailLabel}>Cost</Text>
-              <Text style={styles.detailValue}>${(product.cost || 0).toFixed(2)}</Text>
+              <Text style={styles.detailValue}>
+                ${(product.cost || 0).toFixed(2)}
+              </Text>
             </View>
-            
+
             <View style={styles.detailItem}>
               <View style={styles.detailIconContainer}>
                 <BarChart3 size={20} color={Colors.primary.burgundy} />
@@ -275,16 +314,18 @@ export default function ProductDetailsScreen() {
               <Text style={styles.detailLabel}>Min Stock</Text>
               <Text style={styles.detailValue}>{product.minStockLevel}</Text>
             </View>
-            
+
             <View style={styles.detailItem}>
               <View style={styles.detailIconContainer}>
                 <Truck size={20} color={Colors.primary.burgundy} />
               </View>
               <Text style={styles.detailLabel}>Supplier</Text>
-              <Text style={styles.detailValue}>{product.supplierId?.name || product.supplierId?.email || 'N/A'}</Text>
+              <Text style={styles.detailValue}>
+                {product.supplierId?.name || product.supplierId?.email || "N/A"}
+              </Text>
             </View>
           </View>
-          
+
           {product.barcode && (
             <>
               <View style={styles.divider} />
@@ -296,33 +337,46 @@ export default function ProductDetailsScreen() {
           )}
         </View>
       </ScrollView>
-      
-      {user?.userType === 'business' && (
+
+      {user?.userType === "business" && (
         <View style={styles.footer}>
           <View style={styles.quantityContainer}>
-            <TouchableOpacity 
-              style={[styles.quantityButton, isOutOfStock && styles.disabledButton]} 
+            <TouchableOpacity
+              style={[
+                styles.quantityButton,
+                isOutOfStock && styles.disabledButton,
+              ]}
               onPress={handleDecreaseQuantity}
               disabled={isOutOfStock}
             >
               <Text style={styles.quantityButtonText}>-</Text>
             </TouchableOpacity>
             <Text style={styles.quantityText}>{quantity}</Text>
-            <TouchableOpacity 
-              style={[styles.quantityButton, isOutOfStock && styles.disabledButton]} 
+            <TouchableOpacity
+              style={[
+                styles.quantityButton,
+                isOutOfStock && styles.disabledButton,
+              ]}
               onPress={handleIncreaseQuantity}
               disabled={isOutOfStock}
             >
               <Text style={styles.quantityButtonText}>+</Text>
             </TouchableOpacity>
           </View>
-          
-          <TouchableOpacity 
-            style={[styles.orderButton, isOutOfStock && styles.disabledOrderButton]}
+
+          <TouchableOpacity
+            style={[
+              styles.orderButton,
+              isOutOfStock && styles.disabledOrderButton,
+            ]}
             onPress={handleOrderProduct}
             disabled={isOutOfStock}
           >
-            <ShoppingCart size={20} color={Colors.neutral.white} style={styles.orderButtonIcon} />
+            <ShoppingCart
+              size={20}
+              color={Colors.neutral.white}
+              style={styles.orderButtonIcon}
+            />
             <Text style={styles.orderButtonText}>Order Now</Text>
           </TouchableOpacity>
         </View>
@@ -339,22 +393,28 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  backIconButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 10,
+  },
   productImage: {
-    width: '100%',
+    width: "100%",
     height: 300,
   },
   productInfo: {
     padding: 16,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
     marginBottom: 12,
   },
   productName: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.neutral.black,
     marginBottom: 4,
   },
@@ -362,20 +422,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.neutral.gray,
   },
+  iconBackground: {
+    backgroundColor: Colors.neutral.white,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: Colors.neutral.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
   productPrice: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.primary.burgundy,
   },
   stockInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   stockStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   stockText: {
     fontSize: 14,
@@ -389,21 +462,21 @@ const styles = StyleSheet.create({
     color: Colors.status.error,
   },
   warningBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(255, 193, 7, 0.1)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
   },
   outOfStockBadge: {
-    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+    backgroundColor: "rgba(255, 0, 0, 0.1)",
   },
   warningText: {
     fontSize: 12,
     color: Colors.status.warning,
     marginLeft: 4,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   divider: {
     height: 1,
@@ -412,7 +485,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 12,
   },
@@ -423,12 +496,12 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   detailsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginHorizontal: -8,
   },
   detailItem: {
-    width: '50%',
+    width: "50%",
     paddingHorizontal: 8,
     marginBottom: 16,
   },
@@ -436,9 +509,9 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: Colors.primary.burgundy + '20',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: Colors.primary.burgundy + "20",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 8,
   },
   detailLabel: {
@@ -448,30 +521,30 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   barcodeContainer: {
     backgroundColor: Colors.neutral.extraLightGray,
     padding: 16,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   barcodeText: {
     fontSize: 16,
-    fontFamily: 'monospace',
+    fontFamily: "monospace",
     letterSpacing: 2,
     color: Colors.neutral.black,
   },
   footer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     borderTopWidth: 1,
     borderTopColor: Colors.neutral.extraLightGray,
   },
   quantityContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginRight: 16,
   },
   quantityButton: {
@@ -479,8 +552,8 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 18,
     backgroundColor: Colors.neutral.extraLightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   disabledButton: {
     backgroundColor: Colors.neutral.lightGray,
@@ -488,24 +561,24 @@ const styles = StyleSheet.create({
   },
   quantityButtonText: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.neutral.darkGray,
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
     marginHorizontal: 16,
     minWidth: 24,
-    textAlign: 'center',
+    textAlign: "center",
   },
   orderButton: {
     flex: 1,
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: Colors.primary.burgundy,
     borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     height: 48,
   },
   disabledOrderButton: {
@@ -517,24 +590,24 @@ const styles = StyleSheet.create({
   },
   orderButtonText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.white,
   },
   headerActions: {
-    flexDirection: 'row',
+    flexDirection: "row",
   },
   headerAction: {
     marginLeft: 16,
   },
   notFoundContainer: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
   },
   notFoundText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.darkGray,
     marginTop: 16,
     marginBottom: 24,
@@ -548,6 +621,6 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
 });

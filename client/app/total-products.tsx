@@ -1,30 +1,45 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
-import Colors from '@/constants/colors';
-import { ArrowLeft, Search, Filter, ArrowUpDown, Package } from 'lucide-react-native';
-import { Product } from '@/types';
-import axios from 'axios';
-import api from '@/utils/apiClient';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack, useRouter } from "expo-router";
+import Colors from "@/constants/colors";
+import {
+  ArrowLeft,
+  Search,
+  Filter,
+  ArrowUpDown,
+  Package,
+  X,
+} from "lucide-react-native";
+import { Product } from "@/types";
+import axios from "axios";
+import api from "@/utils/apiClient";
 
 export default function TotalProductsScreen() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [originalProducts, setOriginalProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  const [sortField, setSortField] = useState<'name' | 'quantity'>('name');
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [sortField, setSortField] = useState<"name" | "quantity">("name");
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const res = await api.get('/products'); // Adjust endpoint based on your backend
+        const res = await api.get("/products"); // Adjust endpoint based on your backend
         setOriginalProducts(res.data);
         setFilteredProducts(res.data);
       } catch (err) {
-        console.error('Failed to fetch products:', err);
+        console.error("Failed to fetch products:", err);
       } finally {
         setLoading(false);
       }
@@ -35,11 +50,11 @@ export default function TotalProductsScreen() {
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
-    if (text.trim() === '') {
+    if (text.trim() === "") {
       setFilteredProducts(originalProducts);
     } else {
       const filtered = originalProducts.filter(
-        product =>
+        (product) =>
           product.name.toLowerCase().includes(text.toLowerCase()) ||
           product.sku.toLowerCase().includes(text.toLowerCase())
       );
@@ -47,18 +62,19 @@ export default function TotalProductsScreen() {
     }
   };
 
-  const handleSort = (field: 'name' | 'quantity') => {
-    const newSortOrder = field === sortField ? (sortOrder === 'asc' ? 'desc' : 'asc') : 'asc';
+  const handleSort = (field: "name" | "quantity") => {
+    const newSortOrder =
+      field === sortField ? (sortOrder === "asc" ? "desc" : "asc") : "asc";
     setSortField(field);
     setSortOrder(newSortOrder);
 
     const sorted = [...filteredProducts].sort((a, b) => {
-      if (field === 'name') {
-        return newSortOrder === 'asc'
+      if (field === "name") {
+        return newSortOrder === "asc"
           ? a.name.localeCompare(b.name)
           : b.name.localeCompare(a.name);
       } else {
-        return newSortOrder === 'asc'
+        return newSortOrder === "asc"
           ? a.quantity - b.quantity
           : b.quantity - a.quantity;
       }
@@ -69,8 +85,8 @@ export default function TotalProductsScreen() {
 
   const handleProductPress = (product: Product) => {
     router.push({
-      pathname: '/product-details',
-      params: { id: product._id }
+      pathname: "/product-details",
+      params: { id: product._id },
     });
   };
 
@@ -80,7 +96,9 @@ export default function TotalProductsScreen() {
       onPress={() => handleProductPress(item)}
     >
       <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.productName} numberOfLines={1}>
+          {item.name}
+        </Text>
         <Text style={styles.productSku}>SKU: {item.sku}</Text>
 
         <View style={styles.productDetails}>
@@ -91,12 +109,16 @@ export default function TotalProductsScreen() {
 
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Stock:</Text>
-            <Text style={[
-              styles.detailValue,
-              item.quantity <= 0 ? styles.outOfStock :
-                item.quantity < item.minStockLevel ? styles.lowStock :
-                  styles.inStock
-            ]}>
+            <Text
+              style={[
+                styles.detailValue,
+                item.quantity <= 0
+                  ? styles.outOfStock
+                  : item.quantity < item.minStockLevel
+                  ? styles.lowStock
+                  : styles.inStock,
+              ]}
+            >
               {item.quantity}
             </Text>
           </View>
@@ -108,24 +130,32 @@ export default function TotalProductsScreen() {
         </View>
       </View>
 
-      <View style={[
-        styles.stockIndicator,
-        item.quantity <= 0 ? styles.outOfStockIndicator :
-          item.quantity < item.minStockLevel ? styles.lowStockIndicator :
-            styles.inStockIndicator
-      ]} />
+      <View
+        style={[
+          styles.stockIndicator,
+          item.quantity <= 0
+            ? styles.outOfStockIndicator
+            : item.quantity < item.minStockLevel
+            ? styles.lowStockIndicator
+            : styles.inStockIndicator,
+        ]}
+      />
     </TouchableOpacity>
   );
 
   const totalCount = originalProducts.length;
-  const lowStockCount = originalProducts.filter(p => p.quantity < p.minStockLevel && p.quantity > 0).length;
-  const outOfStockCount = originalProducts.filter(p => p.quantity <= 0).length;
+  const lowStockCount = originalProducts.filter(
+    (p) => p.quantity < p.minStockLevel && p.quantity > 0
+  ).length;
+  const outOfStockCount = originalProducts.filter(
+    (p) => p.quantity <= 0
+  ).length;
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
         options={{
-          title: 'All Products',
+          title: "All Products",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <ArrowLeft size={24} color={Colors.neutral.black} />
@@ -133,10 +163,20 @@ export default function TotalProductsScreen() {
           ),
         }}
       />
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+          <X size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
+      </View>
 
       <View style={styles.header}>
         <View style={styles.searchContainer}>
-          <Search size={20} color={Colors.neutral.gray} style={styles.searchIcon} />
+          <Search
+            size={20}
+            color={Colors.neutral.gray}
+            style={styles.searchIcon}
+          />
           <TextInput
             style={styles.searchInput}
             placeholder="Search products by name or SKU"
@@ -148,30 +188,34 @@ export default function TotalProductsScreen() {
         <View style={styles.filterContainer}>
           <TouchableOpacity
             style={styles.filterButton}
-            onPress={() => handleSort('name')}
+            onPress={() => handleSort("name")}
           >
-            <Text style={[
-              styles.filterButtonText,
-              sortField === 'name' && styles.activeFilterText
-            ]}>
+            <Text
+              style={[
+                styles.filterButtonText,
+                sortField === "name" && styles.activeFilterText,
+              ]}
+            >
               Name
             </Text>
-            {sortField === 'name' && (
+            {sortField === "name" && (
               <ArrowUpDown size={16} color={Colors.primary.burgundy} />
             )}
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.filterButton}
-            onPress={() => handleSort('quantity')}
+            onPress={() => handleSort("quantity")}
           >
-            <Text style={[
-              styles.filterButtonText,
-              sortField === 'quantity' && styles.activeFilterText
-            ]}>
+            <Text
+              style={[
+                styles.filterButtonText,
+                sortField === "quantity" && styles.activeFilterText,
+              ]}
+            >
               Stock
             </Text>
-            {sortField === 'quantity' && (
+            {sortField === "quantity" && (
               <ArrowUpDown size={16} color={Colors.primary.burgundy} />
             )}
           </TouchableOpacity>
@@ -201,19 +245,25 @@ export default function TotalProductsScreen() {
       </View>
 
       {loading ? (
-        <ActivityIndicator size="large" color={Colors.primary.burgundy} style={{ marginTop: 50 }} />
+        <ActivityIndicator
+          size="large"
+          color={Colors.primary.burgundy}
+          style={{ marginTop: 50 }}
+        />
       ) : (
         <FlatList
           data={filteredProducts}
           renderItem={renderProductItem}
-          keyExtractor={item => item._id.toString()}
+          keyExtractor={(item) => item._id.toString()}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           ListEmptyComponent={() => (
             <View style={styles.emptyContainer}>
               <Package size={48} color={Colors.neutral.lightGray} />
               <Text style={styles.emptyText}>No products found</Text>
-              <Text style={styles.emptySubtext}>Try adjusting your search criteria</Text>
+              <Text style={styles.emptySubtext}>
+                Try adjusting your search criteria
+              </Text>
             </View>
           )}
         />
@@ -222,7 +272,7 @@ export default function TotalProductsScreen() {
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => router.push('/add-product')}
+          onPress={() => router.push("/add-product")}
         >
           <Text style={styles.addButtonText}>Add New Product</Text>
         </TouchableOpacity>
@@ -230,7 +280,6 @@ export default function TotalProductsScreen() {
     </SafeAreaView>
   );
 }
-
 
 const styles = StyleSheet.create({
   container: {
@@ -241,8 +290,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.neutral.white,
     borderRadius: 8,
     paddingHorizontal: 12,
@@ -258,12 +307,12 @@ const styles = StyleSheet.create({
     color: Colors.neutral.black,
   },
   filterContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   filterButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.neutral.white,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -277,10 +326,10 @@ const styles = StyleSheet.create({
   },
   activeFilterText: {
     color: Colors.primary.burgundy,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   statsContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     paddingHorizontal: 16,
     marginBottom: 16,
   },
@@ -290,11 +339,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginRight: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statValue: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.neutral.black,
   },
   statLabel: {
@@ -306,7 +355,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   productCard: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: Colors.neutral.white,
     borderRadius: 12,
     marginBottom: 12,
@@ -322,7 +371,7 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 4,
   },
@@ -332,11 +381,11 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   productDetails: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   detailItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginRight: 16,
     marginBottom: 4,
   },
@@ -347,7 +396,7 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   inStock: {
@@ -374,14 +423,14 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.status.error,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
     marginTop: 40,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.darkGray,
     marginTop: 16,
     marginBottom: 8,
@@ -389,7 +438,7 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: Colors.neutral.gray,
-    textAlign: 'center',
+    textAlign: "center",
   },
   footer: {
     padding: 16,
@@ -401,11 +450,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.burgundy,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   addButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

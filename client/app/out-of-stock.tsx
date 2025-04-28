@@ -1,25 +1,40 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
-import Colors from '@/constants/colors';
-import { ArrowLeft, AlertTriangle, Package, ShoppingCart } from 'lucide-react-native';
-import { products } from '@/mocks/products';
-import { Product } from '@/types';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack, useRouter } from "expo-router";
+import Colors from "@/constants/colors";
+import {
+  ArrowLeft,
+  AlertTriangle,
+  Package,
+  ShoppingCart,
+  X,
+} from "lucide-react-native";
+import { products } from "@/mocks/products";
+import { Product } from "@/types";
 
 export default function OutOfStockScreen() {
   const router = useRouter();
-  
+
   // Filter products that are out of stock
-  const outOfStockProducts = products.filter(product => product.quantity <= 0);
+  const outOfStockProducts = products.filter(
+    (product) => product.quantity <= 0
+  );
 
   const handleProductPress = (product: Product) => {
     router.push({
-      pathname: '/product-details',
-      params: { id: product._id }
+      pathname: "/product-details",
+      params: { id: product._id },
     });
   };
-  
+
   const handleOrderNow = (product: Product) => {
     Alert.alert(
       "Order Inventory",
@@ -27,17 +42,17 @@ export default function OutOfStockScreen() {
       [
         {
           text: "Cancel",
-          style: "cancel"
+          style: "cancel",
         },
         {
           text: "Order",
           onPress: () => {
             router.push({
-              pathname: '/new-order',
-              params: { productId: product._id }
+              pathname: "/new-order",
+              params: { productId: product._id },
             });
-          }
-        }
+          },
+        },
       ]
     );
   };
@@ -46,51 +61,67 @@ export default function OutOfStockScreen() {
     <View style={styles.productCard}>
       <View style={styles.productInfo}>
         <View style={styles.productNameContainer}>
-          <Text style={styles.productName} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.productName} numberOfLines={1}>
+            {item.name}
+          </Text>
           <View style={styles.stockBadge}>
             <Text style={styles.stockBadgeText}>Out of Stock</Text>
           </View>
         </View>
-        
+
         <Text style={styles.productSku}>SKU: {item.sku}</Text>
-        
+
         <View style={styles.productDetails}>
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Price:</Text>
             <Text style={styles.detailValue}>${item.price.toFixed(2)}</Text>
           </View>
-          
+
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Category:</Text>
             <Text style={styles.detailValue}>{item.category}</Text>
           </View>
-          
+
           <View style={styles.detailItem}>
             <Text style={styles.detailLabel}>Supplier:</Text>
-            <Text style={styles.detailValue}>{item.supplier || 'Not specified'}</Text>
+            <Text style={styles.detailValue}>
+              {item.supplier || "Not specified"}
+            </Text>
           </View>
         </View>
-        
+
         <View style={styles.urgentLabel}>
-          <AlertTriangle size={16} color={Colors.status.error} style={styles.urgentIcon} />
+          <AlertTriangle
+            size={16}
+            color={Colors.status.error}
+            style={styles.urgentIcon}
+          />
           <Text style={styles.urgentText}>Urgent: Restock Required</Text>
         </View>
       </View>
-      
+
       <View style={styles.productActions}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.viewButton}
           onPress={() => handleProductPress(item)}
         >
-          <Package size={16} color={Colors.primary.burgundy} style={styles.buttonIcon} />
+          <Package
+            size={16}
+            color={Colors.primary.burgundy}
+            style={styles.buttonIcon}
+          />
           <Text style={styles.viewButtonText}>View</Text>
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.orderButton}
           onPress={() => handleOrderNow(item)}
         >
-          <ShoppingCart size={16} color={Colors.neutral.white} style={styles.buttonIcon} />
+          <ShoppingCart
+            size={16}
+            color={Colors.neutral.white}
+            style={styles.buttonIcon}
+          />
           <Text style={styles.orderButtonText}>Order</Text>
         </TouchableOpacity>
       </View>
@@ -98,17 +129,23 @@ export default function OutOfStockScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
         options={{
-          title: 'Out of Stock Items',
+          title: "Out of Stock Items",
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <ArrowLeft size={24} color={Colors.neutral.black} />
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
+      <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
+          <X size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
+      </View>
 
       <View style={styles.header}>
         <View style={styles.warningBanner}>
@@ -129,15 +166,17 @@ export default function OutOfStockScreen() {
           <View style={styles.emptyContainer}>
             <Package size={48} color={Colors.neutral.lightGray} />
             <Text style={styles.emptyText}>No Out of Stock Items</Text>
-            <Text style={styles.emptySubtext}>All your products have inventory available</Text>
+            <Text style={styles.emptySubtext}>
+              All your products have inventory available
+            </Text>
           </View>
         )}
       />
 
       <View style={styles.footer}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.bulkOrderButton}
-          onPress={() => router.push('/new-order')}
+          onPress={() => router.push("/new-order")}
         >
           <Text style={styles.bulkOrderButtonText}>Order Inventory</Text>
         </TouchableOpacity>
@@ -155,9 +194,9 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   warningBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.status.error + '20',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.status.error + "20",
     padding: 12,
     borderRadius: 8,
   },
@@ -165,7 +204,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontSize: 14,
     color: Colors.neutral.darkGray,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   listContent: {
     padding: 16,
@@ -188,19 +227,19 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   productNameContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 4,
   },
   productName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     flex: 1,
   },
   stockBadge: {
-    backgroundColor: Colors.status.error + '20',
+    backgroundColor: Colors.status.error + "20",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
@@ -209,7 +248,7 @@ const styles = StyleSheet.create({
   stockBadgeText: {
     fontSize: 12,
     color: Colors.status.error,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   productSku: {
     fontSize: 14,
@@ -217,15 +256,15 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   productDetails: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     marginBottom: 12,
   },
   detailItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginRight: 16,
     marginBottom: 4,
-    minWidth: '40%',
+    minWidth: "40%",
   },
   detailLabel: {
     fontSize: 14,
@@ -234,17 +273,17 @@ const styles = StyleSheet.create({
   },
   detailValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   urgentLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.status.error + '10',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: Colors.status.error + "10",
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 4,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   urgentIcon: {
     marginRight: 6,
@@ -252,16 +291,16 @@ const styles = StyleSheet.create({
   urgentText: {
     fontSize: 12,
     color: Colors.status.error,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   productActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   viewButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.neutral.extraLightGray,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -271,13 +310,13 @@ const styles = StyleSheet.create({
   },
   viewButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.primary.burgundy,
   },
   orderButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.primary.burgundy,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -287,21 +326,21 @@ const styles = StyleSheet.create({
   },
   orderButtonText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.white,
   },
   buttonIcon: {
     marginRight: 6,
   },
   emptyContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     padding: 24,
     marginTop: 40,
   },
   emptyText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.darkGray,
     marginTop: 16,
     marginBottom: 8,
@@ -309,7 +348,7 @@ const styles = StyleSheet.create({
   emptySubtext: {
     fontSize: 14,
     color: Colors.neutral.gray,
-    textAlign: 'center',
+    textAlign: "center",
   },
   footer: {
     padding: 16,
@@ -321,11 +360,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.burgundy,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   bulkOrderButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

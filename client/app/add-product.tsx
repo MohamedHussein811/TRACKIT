@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import Colors from "@/constants/colors";
-import { Camera, X, Plus, ChevronDown } from "lucide-react-native";
+import { Camera, X, Plus, ChevronDown, ArrowLeft } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useAuthStore } from "@/store/auth-store";
 import api from "@/utils/apiClient";
@@ -25,6 +25,7 @@ export default function AddProductScreen() {
   const { hasPermission } = useAuthStore();
   const [suppliers, setSuppliers] = useState<User[]>([]);
   const [productImage, setProductImage] = useState<string | null>(null);
+  const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     name: "",
     sku: "",
@@ -33,7 +34,9 @@ export default function AddProductScreen() {
     price: "",
     quantity: "",
     minStockLevel: "",
-    supplierId: "",
+    supplierId: suppliers.find(
+      (s) => s.name === user?.name && s.email === user?.email
+    )?._id,
     image: null as string | null,
   });
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
@@ -79,7 +82,8 @@ export default function AddProductScreen() {
       try {
         const suppliers = await fetchSuppliers();
         setSuppliers(suppliers);
-        console.log("suppliers", suppliers);
+        console.log("user", user);
+        console.log(user);
       } catch (error) {
         console.error("Error fetching suppliers:", error);
       }
@@ -122,41 +126,41 @@ export default function AddProductScreen() {
     setShowAddCategory(false);
     setShowCategoryDropdown(false);
   };
-
+  /*
   const handleSave = async () => {
     // Validate form data
     if (!formData.name) {
       Alert.alert("Error", "Product name is required");
       return;
     }
-  
+
     if (!formData.price) {
       Alert.alert("Error", "Product price is required");
       return;
     }
-  
+
     // Create a proper FormData object for the image upload
     const imageFormData = new FormData();
-    
+
     if (productImage) {
       // Create the file object correctly for React Native
-      const fileNameParts = productImage.split('/');
+      const fileNameParts = productImage.split("/");
       const fileName = fileNameParts[fileNameParts.length - 1];
-      
+
       // Create a file object that matches what the server expects
       const fileObj = {
         uri: productImage,
         name: fileName,
-        type: 'image/jpeg' // You might want to determine this dynamically based on the file
+        type: "image/jpeg", // You might want to determine this dynamically based on the file
       };
-      
+
       // Append as a file, not a string
-      imageFormData.append('file', fileObj as any);
-      imageFormData.append('preset', 'neena-bot');
+      imageFormData.append("file", fileObj as any);
+      imageFormData.append("preset", "neena-bot");
     }
-  
+
     let imageUrl = null;
-    
+
     if (productImage) {
       try {
         const imageResponse = await fetch(
@@ -169,14 +173,14 @@ export default function AddProductScreen() {
             },
           }
         );
-        
+
         if (!imageResponse.ok) {
           const errorData = await imageResponse.json();
           console.error("Image upload error:", errorData);
           Alert.alert("Error", "Failed to upload product image");
           return;
         }
-        
+
         const imageData = await imageResponse.json();
         console.log("Image upload successful:", imageData);
         imageUrl = imageData.secure_url;
@@ -186,26 +190,115 @@ export default function AddProductScreen() {
         return;
       }
     }
-  
+
     // Now save the product with the image URL if available
     try {
       const productData = {
         ...formData,
-        image: imageUrl
+        image: imageUrl,
       };
-      
+
       console.log("Sending product data:", productData);
-      
+
       const res = await api.post("/products", productData);
-      
+
       if (res.status !== 201) {
         console.error("Product creation error:", res.data);
         Alert.alert("Error", "Failed to add product");
         return;
       }
-  
+
       Alert.alert("Success", "Product added successfully", [
-        { text: "OK", onPress: () => router.back() }
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    } catch (error) {
+      console.error("Product creation exception:", error);
+      Alert.alert("Error", "An error occurred while saving the product");
+    }
+  };
+  */
+  const handleSave = async () => {
+    // Validate form data
+    if (!formData.name) {
+      Alert.alert("Error", "Product name is required");
+      return;
+    }
+
+    if (!formData.price) {
+      Alert.alert("Error", "Product price is required");
+      return;
+    }
+
+    // Create a proper FormData object for the image upload
+    const imageFormData = new FormData();
+
+    if (productImage) {
+      const fileNameParts = productImage.split("/");
+      const fileName = fileNameParts[fileNameParts.length - 1];
+
+      const fileObj = {
+        uri: productImage,
+        name: fileName,
+        type: "image/jpeg",
+      };
+
+      imageFormData.append("file", fileObj as any);
+      imageFormData.append("preset", "neena-bot");
+    }
+
+    let imageUrl = null;
+
+    if (productImage) {
+      try {
+        const imageResponse = await fetch(
+          "https://api-novatech.vercel.app/upload-file",
+          {
+            method: "POST",
+            body: imageFormData,
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+
+        if (!imageResponse.ok) {
+          const errorData = await imageResponse.json();
+          console.error("Image upload error:", errorData);
+          Alert.alert("Error", "Failed to upload product image");
+          return;
+        }
+
+        const imageData = await imageResponse.json();
+        imageUrl = imageData.secure_url;
+      } catch (error) {
+        console.error("Image upload exception:", error);
+        Alert.alert("Error", "An error occurred while uploading the image");
+        return;
+      }
+    }
+
+    // 🛠 FIX: Convert fields before sending
+    const productData = {
+      ...formData,
+      price: parseFloat(formData.price),
+      quantity: parseInt(formData.quantity),
+      minStockLevel: parseInt(formData.minStockLevel),
+      image: imageUrl || formData.image,
+    };
+
+    // console.log("Sending product data:", productData);
+
+    try {
+      const res = await api.post("/products", productData);
+
+      if (res.status !== 201) {
+        console.error("Product creation error:", res.data);
+        Alert.alert("Error", "Failed to add product");
+        return;
+      }
+
+      Alert.alert("Success", "Product added successfully", [
+        { text: "OK", onPress: () => router.back() },
       ]);
     } catch (error) {
       console.error("Product creation exception:", error);
@@ -233,6 +326,14 @@ export default function AddProductScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
+        <TouchableOpacity
+          style={styles.backIconButton}
+          onPress={() => router.back()}
+        >
+          <View style={styles.iconBackground}>
+            <ArrowLeft size={20} color={Colors.neutral.black} />
+          </View>
+        </TouchableOpacity>
         <View style={styles.imageSection}>
           {productImage ? (
             <View style={styles.imageContainer}>
@@ -420,42 +521,11 @@ export default function AddProductScreen() {
           <View style={styles.inputGroup}>
             <Text style={styles.inputLabel}>Supplier</Text>
             <TouchableOpacity
-              style={styles.dropdownButton}
+              style={styles.inputGroup}
               onPress={() => setShowSupplierDropdown(!showSupplierDropdown)}
             >
-              <Text
-                style={
-                  formData.supplierId
-                    ? styles.dropdownText
-                    : styles.dropdownPlaceholder
-                }
-              >
-                {formData.supplierId
-                  ? suppliers.find((s) => s._id === formData.supplierId)
-                      ?.name || "Select supplier"
-                  : "Select supplier"}
-              </Text>
-              <ChevronDown size={20} color={Colors.neutral.gray} />
+              <Text>{user?.name}</Text>
             </TouchableOpacity>
-
-            {showSupplierDropdown && (
-              <View style={styles.dropdownMenu}>
-                {suppliers.map((supplier) => (
-                  <TouchableOpacity
-                    key={supplier._id}
-                    style={styles.dropdownItem}
-                    onPress={() => {
-                      handleInputChange("supplierId", supplier._id);
-                      setShowSupplierDropdown(false);
-                    }}
-                  >
-                    <Text style={styles.dropdownItemText}>
-                      {supplier.name || supplier.email}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
           </View>
         </View>
       </ScrollView>

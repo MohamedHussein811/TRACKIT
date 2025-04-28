@@ -1,65 +1,121 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
-import Colors from '@/constants/colors';
-import { X, ChevronDown, TrendingUp, TrendingDown, DollarSign, Package, Calendar, ShoppingCart } from 'lucide-react-native';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack, useRouter } from "expo-router";
+import Colors from "@/constants/colors";
+import {
+  X,
+  ChevronDown,
+  TrendingUp,
+  TrendingDown,
+  DollarSign,
+  Package,
+  Calendar,
+  ShoppingCart,
+} from "lucide-react-native";
 
 // Mock data for sales report
 const salesData = {
-  totalSales: 24680.50,
+  totalSales: 24680.5,
   salesGrowth: 12.5,
   averageOrderValue: 245.75,
   totalSoldQuantity: 432, // Added total sold quantity
   topSellingProducts: [
-    { name: 'Premium Coffee Beans', sales: 4250.00, quantity: 170, soldQuantity: 85 }, // Added soldQuantity
-    { name: 'Artisanal Chocolate Bars', sales: 3187.50, quantity: 255, soldQuantity: 127 },
-    { name: 'Organic Olive Oil', sales: 2812.50, quantity: 150, soldQuantity: 75 },
-    { name: 'Specialty Tea Collection', sales: 2309.30, quantity: 70, soldQuantity: 35 },
-    { name: 'Gourmet Spice Set', sales: 1820.00, quantity: 40, soldQuantity: 20 },
+    {
+      name: "Premium Coffee Beans",
+      sales: 4250.0,
+      quantity: 170,
+      soldQuantity: 85,
+    }, // Added soldQuantity
+    {
+      name: "Artisanal Chocolate Bars",
+      sales: 3187.5,
+      quantity: 255,
+      soldQuantity: 127,
+    },
+    {
+      name: "Organic Olive Oil",
+      sales: 2812.5,
+      quantity: 150,
+      soldQuantity: 75,
+    },
+    {
+      name: "Specialty Tea Collection",
+      sales: 2309.3,
+      quantity: 70,
+      soldQuantity: 35,
+    },
+    {
+      name: "Gourmet Spice Set",
+      sales: 1820.0,
+      quantity: 40,
+      soldQuantity: 20,
+    },
   ],
   monthlySales: [
-    { month: 'Jan', amount: 15420.30, soldQuantity: 310 }, // Added soldQuantity
-    { month: 'Feb', amount: 18750.25, soldQuantity: 375 },
-    { month: 'Mar', amount: 16890.75, soldQuantity: 338 },
-    { month: 'Apr', amount: 19250.50, soldQuantity: 385 },
-    { month: 'May', amount: 21340.80, soldQuantity: 427 },
-    { month: 'Jun', amount: 24680.50, soldQuantity: 432 },
+    { month: "Jan", amount: 15420.3, soldQuantity: 310 }, // Added soldQuantity
+    { month: "Feb", amount: 18750.25, soldQuantity: 375 },
+    { month: "Mar", amount: 16890.75, soldQuantity: 338 },
+    { month: "Apr", amount: 19250.5, soldQuantity: 385 },
+    { month: "May", amount: 21340.8, soldQuantity: 427 },
+    { month: "Jun", amount: 24680.5, soldQuantity: 432 },
   ],
 };
 
 export default function SalesReportScreen() {
   const router = useRouter();
-  const [timeRange, setTimeRange] = useState('Last 30 Days');
+  const [timeRange, setTimeRange] = useState("Last 30 Days");
   const [showTimeRangeDropdown, setShowTimeRangeDropdown] = useState(false);
-  
-  const timeRangeOptions = ['Last 7 Days', 'Last 30 Days', 'Last 90 Days', 'This Year', 'All Time'];
+
+  const timeRangeOptions = [
+    "Last 7 Days",
+    "Last 30 Days",
+    "Last 90 Days",
+    "This Year",
+    "All Time",
+  ];
 
   // Simple bar chart component for monthly sales
   const BarChart = () => {
-    const maxSales = Math.max(...salesData.monthlySales.map(item => item.amount));
-    
+    const maxSales = Math.max(
+      ...salesData.monthlySales.map((item) => item.amount)
+    );
+
     return (
       <View style={styles.barChartContainer}>
         {salesData.monthlySales.map((item, index) => (
           <View key={index} style={styles.barChartItem}>
             <View style={styles.barContainer}>
-              <View 
+              <View
                 style={[
-                  styles.bar, 
-                  { 
+                  styles.bar,
+                  {
                     width: `${(item.amount / maxSales) * 100}%`,
-                    backgroundColor: index === salesData.monthlySales.length - 1 
-                      ? Colors.primary.burgundy 
-                      : Colors.primary.burgundyLight
-                  }
-                ]} 
+                    backgroundColor:
+                      index === salesData.monthlySales.length - 1
+                        ? Colors.primary.burgundy
+                        : Colors.primary.burgundyLight,
+                  },
+                ]}
               />
-              <Text style={styles.barValue}>${item.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}</Text>
+              <Text style={styles.barValue}>
+                $
+                {item.amount.toLocaleString(undefined, {
+                  maximumFractionDigits: 0,
+                })}
+              </Text>
             </View>
             <View style={styles.barLabelContainer}>
               <Text style={styles.barLabel}>{item.month}</Text>
-              <Text style={styles.barSoldQuantity}>{item.soldQuantity} units</Text>
+              <Text style={styles.barSoldQuantity}>
+                {item.soldQuantity} units
+              </Text>
             </View>
           </View>
         ))}
@@ -68,31 +124,40 @@ export default function SalesReportScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
         options={{
-          title: 'Sales Report',
+          title: "Sales Report",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.neutral.extraLightGray },
-          headerTitleStyle: { color: Colors.neutral.black, fontWeight: '600' },
+          headerTitleStyle: { color: Colors.neutral.black, fontWeight: "600" },
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <X size={24} color={Colors.neutral.black} />
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
 
       <View style={styles.timeRangeSelector}>
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={{ padding: 8 }}
+          >
+            <X size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={{ marginLeft: 8, color: "black" }}></Text>
+        </View>
         <Text style={styles.timeRangeLabel}>Time Range:</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.timeRangeButton}
           onPress={() => setShowTimeRangeDropdown(!showTimeRangeDropdown)}
         >
           <Text style={styles.timeRangeText}>{timeRange}</Text>
           <ChevronDown size={20} color={Colors.neutral.gray} />
         </TouchableOpacity>
-        
+
         {showTimeRangeDropdown && (
           <View style={styles.timeRangeDropdown}>
             {timeRangeOptions.map((option) => (
@@ -104,10 +169,10 @@ export default function SalesReportScreen() {
                   setShowTimeRangeDropdown(false);
                 }}
               >
-                <Text 
+                <Text
                   style={[
                     styles.timeRangeOptionText,
-                    option === timeRange && styles.selectedTimeRangeOptionText
+                    option === timeRange && styles.selectedTimeRangeOptionText,
                   ]}
                 >
                   {option}
@@ -118,16 +183,21 @@ export default function SalesReportScreen() {
         )}
       </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.statsGrid}>
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <DollarSign size={24} color={Colors.primary.burgundy} />
             </View>
-            <Text style={styles.statValue}>${salesData.totalSales.toLocaleString()}</Text>
+            <Text style={styles.statValue}>
+              ${salesData.totalSales.toLocaleString()}
+            </Text>
             <Text style={styles.statLabel}>Total Sales</Text>
           </View>
-          
+
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               {salesData.salesGrowth >= 0 ? (
@@ -136,17 +206,23 @@ export default function SalesReportScreen() {
                 <TrendingDown size={24} color={Colors.status.error} />
               )}
             </View>
-            <Text 
+            <Text
               style={[
                 styles.statValue,
-                { color: salesData.salesGrowth >= 0 ? Colors.status.success : Colors.status.error }
+                {
+                  color:
+                    salesData.salesGrowth >= 0
+                      ? Colors.status.success
+                      : Colors.status.error,
+                },
               ]}
             >
-              {salesData.salesGrowth >= 0 ? '+' : ''}{salesData.salesGrowth}%
+              {salesData.salesGrowth >= 0 ? "+" : ""}
+              {salesData.salesGrowth}%
             </Text>
             <Text style={styles.statLabel}>Growth</Text>
           </View>
-          
+
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
               <Package size={24} color={Colors.status.info} />
@@ -154,7 +230,7 @@ export default function SalesReportScreen() {
             <Text style={styles.statValue}>${salesData.averageOrderValue}</Text>
             <Text style={styles.statLabel}>Avg. Order</Text>
           </View>
-          
+
           {/* Added new stat card for total sold quantity */}
           <View style={styles.statCard}>
             <View style={styles.statIconContainer}>
@@ -172,7 +248,7 @@ export default function SalesReportScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Top Selling Products</Text>
-          
+
           {salesData.topSellingProducts.map((product, index) => (
             <View key={index} style={styles.productItem}>
               <View style={styles.productRank}>
@@ -181,9 +257,15 @@ export default function SalesReportScreen() {
               <View style={styles.productInfo}>
                 <Text style={styles.productName}>{product.name}</Text>
                 <View style={styles.productStats}>
-                  <Text style={styles.productStat}>{product.soldQuantity} sold</Text>
-                  <Text style={styles.productStat}>{product.quantity} in stock</Text>
-                  <Text style={styles.productStat}>${product.sales.toLocaleString()}</Text>
+                  <Text style={styles.productStat}>
+                    {product.soldQuantity} sold
+                  </Text>
+                  <Text style={styles.productStat}>
+                    {product.quantity} in stock
+                  </Text>
+                  <Text style={styles.productStat}>
+                    ${product.sales.toLocaleString()}
+                  </Text>
                 </View>
               </View>
             </View>
@@ -192,7 +274,7 @@ export default function SalesReportScreen() {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Sales Breakdown</Text>
-          
+
           <View style={styles.pieChartContainer}>
             <View style={styles.pieChart}>
               <View style={[styles.pieSlice, styles.pieSlice1]} />
@@ -200,18 +282,33 @@ export default function SalesReportScreen() {
               <View style={[styles.pieSlice, styles.pieSlice3]} />
               <View style={styles.pieCenter} />
             </View>
-            
+
             <View style={styles.pieChartLegend}>
               <View style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: Colors.primary.burgundy }]} />
+                <View
+                  style={[
+                    styles.legendColor,
+                    { backgroundColor: Colors.primary.burgundy },
+                  ]}
+                />
                 <Text style={styles.legendText}>Beverages (45%)</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: Colors.primary.burgundyLight }]} />
+                <View
+                  style={[
+                    styles.legendColor,
+                    { backgroundColor: Colors.primary.burgundyLight },
+                  ]}
+                />
                 <Text style={styles.legendText}>Confectionery (30%)</Text>
               </View>
               <View style={styles.legendItem}>
-                <View style={[styles.legendColor, { backgroundColor: Colors.neutral.lightGray }]} />
+                <View
+                  style={[
+                    styles.legendColor,
+                    { backgroundColor: Colors.neutral.lightGray },
+                  ]}
+                />
                 <Text style={styles.legendText}>Other (25%)</Text>
               </View>
             </View>
@@ -234,13 +331,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.extraLightGray,
   },
   timeRangeSelector: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     padding: 16,
     backgroundColor: Colors.neutral.white,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral.extraLightGray,
-    position: 'relative',
+    position: "relative",
     zIndex: 10,
   },
   timeRangeLabel: {
@@ -249,8 +346,8 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   timeRangeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: Colors.neutral.extraLightGray,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -262,7 +359,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   timeRangeDropdown: {
-    position: 'absolute',
+    position: "absolute",
     top: 60,
     right: 16,
     backgroundColor: Colors.neutral.white,
@@ -286,7 +383,7 @@ const styles = StyleSheet.create({
   },
   selectedTimeRangeOptionText: {
     color: Colors.primary.burgundy,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   scrollView: {
     flex: 1,
@@ -294,31 +391,31 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     marginBottom: 16,
   },
   statCard: {
     backgroundColor: Colors.neutral.white,
     borderRadius: 12,
     padding: 16,
-    width: '48%',
+    width: "48%",
     marginBottom: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   statIconContainer: {
     width: 48,
     height: 48,
     borderRadius: 24,
     backgroundColor: Colors.neutral.extraLightGray,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 12,
   },
   statValue: {
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 4,
   },
@@ -334,34 +431,34 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 16,
   },
   barChartContainer: {
-    width: '100%',
+    width: "100%",
   },
   barChartItem: {
     marginBottom: 16,
   },
   barContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     height: 24,
   },
   bar: {
-    height: '100%',
+    height: "100%",
     borderRadius: 4,
   },
   barValue: {
     marginLeft: 8,
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.darkGray,
   },
   barLabelContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginTop: 4,
   },
   barLabel: {
@@ -371,11 +468,11 @@ const styles = StyleSheet.create({
   barSoldQuantity: {
     fontSize: 14,
     color: Colors.neutral.gray,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   productItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   productRank: {
@@ -383,13 +480,13 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 16,
     backgroundColor: Colors.primary.burgundyLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginRight: 12,
   },
   productRankText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.white,
   },
   productInfo: {
@@ -401,39 +498,39 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   productStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
   },
   productStat: {
     fontSize: 14,
     color: Colors.neutral.gray,
   },
   pieChartContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   pieChart: {
     width: 120,
     height: 120,
     borderRadius: 60,
     backgroundColor: Colors.neutral.extraLightGray,
-    position: 'relative',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
+    position: "relative",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   pieSlice: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
+    position: "absolute",
+    width: "100%",
+    height: "100%",
   },
   pieSlice1: {
     backgroundColor: Colors.primary.burgundy,
-    transform: [{ rotate: '0deg' }],
+    transform: [{ rotate: "0deg" }],
     zIndex: 3,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     borderTopLeftRadius: 60,
@@ -442,10 +539,10 @@ const styles = StyleSheet.create({
   },
   pieSlice2: {
     backgroundColor: Colors.primary.burgundyLight,
-    transform: [{ rotate: '162deg' }],
+    transform: [{ rotate: "162deg" }],
     zIndex: 2,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     borderTopLeftRadius: 60,
@@ -454,10 +551,10 @@ const styles = StyleSheet.create({
   },
   pieSlice3: {
     backgroundColor: Colors.neutral.lightGray,
-    transform: [{ rotate: '270deg' }],
+    transform: [{ rotate: "270deg" }],
     zIndex: 1,
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
     borderTopRightRadius: 0,
     borderBottomRightRadius: 0,
     borderTopLeftRadius: 60,
@@ -476,8 +573,8 @@ const styles = StyleSheet.create({
     marginLeft: 16,
   },
   legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 8,
   },
   legendColor: {
@@ -500,11 +597,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.burgundy,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   exportButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
