@@ -122,13 +122,15 @@ export default function EventPaymentScreen() {
     }
   };
   const handleReservation = async () => {
+    console.log(user?._id);
+    console.log(Date.now());
     try {
       // Simulate sending data to a server or database
       const reservationData = {
         eventId: id,
         attendeeName: formData.name,
         attendeeEmail: formData.email,
-        attendeeId: user?._id,
+        attendeeId: user?._id || "hxhsjsj",
         ticketType: "Standard", // You can update this dynamically
         price: parseFloat(Array.isArray(price) ? price[0] : price),
         nameOnCard:

@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -63,7 +64,7 @@ export default function EventDetailsScreen() {
   const handleRegister = () => {
     if (!event) return;
 
-    if (event.isRegistered) {
+    if (register === "false") {
       return Alert.alert("Already Registered", "You're already registered.");
     }
 
@@ -148,7 +149,7 @@ export default function EventDetailsScreen() {
             </TouchableOpacity>
           </View>
 
-          {event.isRegistered && (
+          {register === "false" && (
             <View style={styles.registeredBadge}>
               <Text style={styles.registeredText}>Registered</Text>
             </View>
@@ -195,7 +196,7 @@ export default function EventDetailsScreen() {
         <TouchableOpacity
           style={[
             styles.registerButton,
-            event.isRegistered && styles.registeredButton,
+            register === "false" && styles.registeredButton,
           ]}
           onPress={handleRegister}
         >
@@ -205,7 +206,7 @@ export default function EventDetailsScreen() {
               event.isRegistered && styles.registeredButtonText,
             ]}
           >
-            {event.isRegistered ? "Already Registered" : "Register Now"}
+            {register == "false" ? "Already Registered" : "Register Now"}
           </Text>
         </TouchableOpacity>
       </View>

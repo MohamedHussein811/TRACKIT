@@ -134,6 +134,7 @@ export default function AddEventScreen() {
         organizerName: user?.name,
       };
 
+      console.log(user?._id);
       const res = await api.post("/events", eventData);
 
       if (res.status !== 201) {

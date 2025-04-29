@@ -55,7 +55,26 @@ export default function EventsScreen() {
 
   const handleEventPress = (event: Event) => {
     // Navigate to event details
+    /*
+    Alert.alert(
+      "Reserve Spot",
+      `Would you like to reserve a spot for "${event.title}"?`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Reserve",
+          onPress: () => {
+            // Navigate to event details for registration and payment
+            router.push(`/event-details?id=${event._id}&register=true`);
+          },
+        },
+      ]
+    );
     router.push(`/event-details?id=${event._id}`);
+    */
   };
 
   const handleReserveSpot = (event: Event) => {

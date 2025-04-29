@@ -33,6 +33,7 @@ export default function EventsScreen() {
   const userType = user?.userType || "business";
   const [events, setEvents] = useState<Event[]>([]);
   const [soldTickets, setSoldTickets] = useState<any[]>([]); // Replace with actual type if available
+  const [soldAllTickets, setAllSoldTickets] = useState<any[]>([]); // Replace with actual type if available
 
   // For event managers, show event requests instead of regular events
   const isEventManager = userType === "organizer";
@@ -50,11 +51,18 @@ export default function EventsScreen() {
   useEffect(() => {
     const fetchEvents = async () => {
       const res = await api.get("/events");
-      const sold = await api.get("/reservations");
+      let sold = await api.get("/reservations");
 
       setEvents(res.data);
+      setAllSoldTickets(sold.data);
+      console.log(`all sold tickets are ${JSON.stringify(sold.data)}`);
+      sold.data = sold.data.filter(
+        (s) => s.eventId.organizerName === user?.name
+      );
+
       setSoldTickets(sold.data);
       console.log(res.data);
+      console.log(`Sold tickets are: ${JSON.stringify(sold.data)}`);
     };
 
     fetchEvents();
@@ -62,14 +70,15 @@ export default function EventsScreen() {
 
   const handleEventPress = (event: Event) => {
     // Navigate to event details
-    router.push(`/event-details?id=${event._id}`);
+    router.push(`/event-details?id=${event._id}&register=false`);
   };
 
   const handleReserveSpot = (event: Event) => {
-    const isPurchased = soldTickets.some(
+    const isPurchased = soldAllTickets.some(
       (ticket) =>
         ticket.attendeeName === user?.name &&
-        ticket.attendeeEmail === user?.email
+        ticket.attendeeEmail === user?.email &&
+        ticket.eventId._id === event._id
     );
     if (isPurchased) {
       // If already registered, just view details
@@ -140,7 +149,7 @@ Price: $${ticket.price.toFixed(2)}`,
   };
   const renderEventCard = ({ item }: { item: Event }) => {
     // Check if the user has already reserved a spot for this event
-    const isPurchased = soldTickets.some(
+    const isPurchased = soldAllTickets.some(
       (ticket) =>
         ticket.eventId._id === item._id &&
         ticket.attendeeName === user.name &&
