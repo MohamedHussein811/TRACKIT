@@ -10,7 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
+import { router, useRouter } from "expo-router";
 import Colors from "@/constants/colors";
 import {
   Search,
@@ -48,6 +48,24 @@ export default function InventoryScreen() {
 
     fetchOrders(); // Call the function to fetch orders on component mount
   }, []); // Empty dependency array to only fetch orders on initial render
+
+  return (
+    <SafeAreaView style={styles.container}>
+
+
+      <View style={styles.searchContainer}>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity style={styles.actionButton}>
+            <Filter color={Colors.neutral.gray} size={20} />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.actionButton} onPress={() => router.push("/barcode-scanner")}>
+            <ScanBarcode color={Colors.neutral.gray} size={20} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({

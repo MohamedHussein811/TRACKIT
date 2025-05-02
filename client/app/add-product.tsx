@@ -19,6 +19,8 @@ import { useAuthStore } from "@/store/auth-store";
 import api from "@/utils/apiClient";
 import { fetchSuppliers } from "@/mocks/suppliers";
 import { User } from "@/types";
+import Modal from "react-native-modal";
+import * as MediaLibrary from 'expo-media-library';
 
 export default function AddProductScreen() {
   const router = useRouter();
@@ -28,7 +30,6 @@ export default function AddProductScreen() {
   const { user } = useAuthStore();
   const [formData, setFormData] = useState({
     name: "",
-    sku: "",
     description: "",
     category: "",
     price: "",
@@ -43,7 +44,26 @@ export default function AddProductScreen() {
   const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
+  const [generatedQRCode, setGeneratedQRCode] = useState<string>("");
+  const [isQRModalVisible, setIsQRModalVisible] = useState(false);
 
+  // Add this function near other handler functions
+  const saveImageToGallery = async () => {
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permission required', 'We need permission to save images to your gallery');
+        return;
+      }
+  
+      await MediaLibrary.saveToLibraryAsync(generatedQRCode);
+      Alert.alert('Success', 'QR code saved to gallery!');
+    } catch (error) {
+      console.error('Error saving image:', error);
+      Alert.alert('Error', 'Failed to save QR code to gallery');
+    }
+  };
   // HIGHLIGHT: Changed to allow adding custom categories
   const [categories, setCategories] = useState([
     "Beverages",
@@ -297,8 +317,16 @@ export default function AddProductScreen() {
         return;
       }
 
+      setGeneratedQRCode(res.data.sku); // Set the generated QR code URL
+
       Alert.alert("Success", "Product added successfully", [
-        { text: "OK", onPress: () => router.back() },
+        { 
+          text: "OK", 
+          onPress: () => {
+            router.back();
+            setGeneratedQRCode(''); // Clear QR code when navigating back
+          }
+        },
       ]);
     } catch (error) {
       console.error("Product creation exception:", error);
@@ -369,16 +397,6 @@ export default function AddProductScreen() {
               placeholder="Enter product name"
               value={formData.name}
               onChangeText={(text) => handleInputChange("name", text)}
-            />
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>SKU</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter SKU"
-              value={formData.sku}
-              onChangeText={(text) => handleInputChange("sku", text)}
             />
           </View>
 
@@ -535,6 +553,36 @@ export default function AddProductScreen() {
           <Text style={styles.saveButtonText}>Save Product</Text>
         </TouchableOpacity>
       </View>
+      <Modal
+  isVisible={!!generatedQRCode}
+  onBackdropPress={() => setGeneratedQRCode('')}
+  style={styles.modal}
+>
+  <View style={styles.modalContent}>
+    <TouchableOpacity 
+      style={styles.modalCloseButton}
+      onPress={() => setGeneratedQRCode('')}
+    >
+      <X size={24} color={Colors.neutral.black} />
+    </TouchableOpacity>
+
+    <Text style={styles.modalTitle}>Product QR Code</Text>
+    
+    <Image
+      source={{ uri: generatedQRCode }}
+      style={styles.qrImage}
+      resizeMode="contain"
+    />
+
+    <TouchableOpacity
+      style={styles.saveButton}
+      onPress={saveImageToGallery}
+    >
+      <Text style={styles.saveButtonText}>Save to Gallery</Text>
+    </TouchableOpacity>
+  </View>
+</Modal>
+
     </SafeAreaView>
   );
 }
@@ -579,6 +627,24 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  iconBackground: {
+    backgroundColor: Colors.neutral.white,
+    borderRadius: 20,
+    padding: 8,
+    shadowColor: Colors.neutral.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+
+  backIconButton: {
+    position: "absolute",
+    top: 16,
+    left: 16,
+    zIndex: 1,
+  },
+  
   removeImageButton: {
     position: "absolute",
     top: 8,
@@ -737,5 +803,35 @@ const styles = StyleSheet.create({
     color: Colors.neutral.white,
     fontSize: 16,
     fontWeight: "600",
+  },
+  modal: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 0,
+  },
+  modalContent: {
+    backgroundColor: Colors.neutral.white,
+    borderRadius: 16,
+    padding: 24,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalCloseButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 16,
+    color: Colors.neutral.black,
+  },
+  qrImage: {
+    width: 200,
+    height: 200,
+    marginBottom: 24,
+    borderRadius: 8,
   },
 });
