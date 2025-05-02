@@ -74,7 +74,8 @@ export const createOrder = async (req, res) => {
 
 export const createUnitItemOrder = async (req, res) => {
   try {
-    const { productId,userName } = req.params;
+    const { productId } = req.params;
+    const userName = req.body.userName; // Get userName from request body or session
 
     const quantity = 1;
     const product = await Product.findById(productId);
