@@ -1,37 +1,52 @@
 import Order from "../../models/Orders.js";
 import Product from "../../models/Products.js";
-
+import User from "../../models/Users.js";
 export const createOrder = async (req, res) => {
   try {
-    const userId = req.userId || req.body.userId; // Assuming userId is available in the request
+    const userId = req.userId || req.body.userId;
 
-    // Validating and preparing the order data
     const {
       supplierId,
       items,
       totalAmount,
       status = "pending",
       createdAt,
+      userName,
     } = req.body;
 
-    // Check if all required fields are provided
     if (!supplierId || !items || !totalAmount) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
-    // Validate that each product exists
     const productIds = items.map((item) => item.productId);
     const products = await Product.find({ _id: { $in: productIds } });
 
     if (products.length !== items.length) {
-      return res
-        .status(400)
-        .json({ message: "One or more products not found" });
+      return res.status(400).json({ message: "One or more products not found" });
     }
 
-    // Prepare the order object
+    // Check for sufficient stock before subtracting
+    for (const item of items) {
+      const product = products.find((p) => p._id.toString() === item.productId);
+      if (product.quantity < item.quantity) {
+        return res.status(400).json({
+          message: `Insufficient stock for product: ${product.name}`,
+        });
+      }
+    }
+
+    // Subtract quantities
+    await Promise.all(
+      items.map(async (item) => {
+        await Product.findByIdAndUpdate(item.productId, {
+          $inc: { quantity: -item.quantity },
+        });
+      })
+    );
+
     const orderData = {
       supplierId,
+      userName,
       items: items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -40,42 +55,48 @@ export const createOrder = async (req, res) => {
       totalAmount,
       status,
       createdAt: createdAt || new Date().toISOString(),
-      userName: req.body.userName,
     };
 
-    // Create the order in the database
     const newOrder = new Order(orderData);
     await newOrder.save();
 
-    // Respond with success
-    res
-      .status(201)
-      .json({ message: "Order created successfully", order: newOrder });
+    res.status(201).json({
+      message: "Order created successfully",
+      order: newOrder,
+    });
   } catch (error) {
     console.error("Error creating order:", error);
     res.status(500).json({ message: error.message });
   }
 };
 
+
 export const getOrders = async (req, res) => {
   try {
-    // Fetch all orders without filtering by userName
-    const orders = await Order.find() // No userName filtering here
-      .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+    const orders = await Order.find()
+      .sort({ createdAt: -1 })
       .populate({
-        path: "items.productId", // Use items.productId as the ref to populate product details
-        select: "name category brand price stock images", // Specify the fields you want from the Product
+        path: "items.productId",
+        select: "name category brand price stock images",
       });
 
-    const filteredOrders = orders.map((order) => {
-      // Filter out items with null productId (if any)
+    // Lookup user data for each order based on userName
+    const ordersWithUserData = await Promise.all(
+      orders.map(async (order) => {
+        const user = await User.findOne({ name: order.userName }).select(
+          "email phone role name userType avatar rating"
+        );
+        return {
+          ...order.toObject(),
+          userData: user || null, // add userData to each order
+        };
+      })
+    );
 
-      return order;
-    });
-
-    res.status(200).json({ orders: filteredOrders });
+    res.status(200).json({ orders: ordersWithUserData });
   } catch (error) {
     console.error("Error fetching orders:", error);
     res.status(500).json({ message: error.message });
   }
 };
+

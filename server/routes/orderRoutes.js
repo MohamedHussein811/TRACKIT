@@ -7,6 +7,6 @@ import {
 const router = Router();
 
 router.post("/order", authenticateToken, createOrder);
-router.get("/order", authenticateToken, getOrders);
+router.get("/order",getOrders);
 
 export default router;

@@ -116,6 +116,10 @@ export const useAuthStore = create<AuthState>()(
           
           // Save token using our helper
           await get().setToken(token);
+
+          console.log('Login successful, got token');
+          console.log('userData', userData);
+          console.log('token', token);
           
           const user: User = {
             _id: userData.id,
