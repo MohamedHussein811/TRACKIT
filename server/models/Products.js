@@ -8,9 +8,8 @@ const productSchema = new Schema({
   },
   sku: {
     type: String,
-    required: true,
-    unique: true,
-    uppercase: true,
+    default: "",
+
   },
   image: {
     type: String,
