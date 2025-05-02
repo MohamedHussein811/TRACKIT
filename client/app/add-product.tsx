@@ -20,7 +20,7 @@ import api from "@/utils/apiClient";
 import { fetchSuppliers } from "@/mocks/suppliers";
 import { User } from "@/types";
 import Modal from "react-native-modal";
-import * as MediaLibrary from 'expo-media-library';
+import { Linking } from "react-native";
 
 export default function AddProductScreen() {
   const router = useRouter();
@@ -48,22 +48,6 @@ export default function AddProductScreen() {
   const [isQRModalVisible, setIsQRModalVisible] = useState(false);
 
   // Add this function near other handler functions
-  const saveImageToGallery = async () => {
-    try {
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-      
-      if (status !== 'granted') {
-        Alert.alert('Permission required', 'We need permission to save images to your gallery');
-        return;
-      }
-  
-      await MediaLibrary.saveToLibraryAsync(generatedQRCode);
-      Alert.alert('Success', 'QR code saved to gallery!');
-    } catch (error) {
-      console.error('Error saving image:', error);
-      Alert.alert('Error', 'Failed to save QR code to gallery');
-    }
-  };
   // HIGHLIGHT: Changed to allow adding custom categories
   const [categories, setCategories] = useState([
     "Beverages",
@@ -320,12 +304,12 @@ export default function AddProductScreen() {
       setGeneratedQRCode(res.data.sku); // Set the generated QR code URL
 
       Alert.alert("Success", "Product added successfully", [
-        { 
-          text: "OK", 
+        {
+          text: "OK",
           onPress: () => {
             router.back();
-            setGeneratedQRCode(''); // Clear QR code when navigating back
-          }
+            setGeneratedQRCode(""); // Clear QR code when navigating back
+          },
         },
       ]);
     } catch (error) {
@@ -554,35 +538,37 @@ export default function AddProductScreen() {
         </TouchableOpacity>
       </View>
       <Modal
-  isVisible={!!generatedQRCode}
-  onBackdropPress={() => setGeneratedQRCode('')}
-  style={styles.modal}
->
-  <View style={styles.modalContent}>
-    <TouchableOpacity 
-      style={styles.modalCloseButton}
-      onPress={() => setGeneratedQRCode('')}
-    >
-      <X size={24} color={Colors.neutral.black} />
-    </TouchableOpacity>
+        isVisible={!!generatedQRCode}
+        onBackdropPress={() => setGeneratedQRCode("")}
+        style={styles.modal}
+      >
+        <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.modalCloseButton}
+            onPress={() => setGeneratedQRCode("")}
+          >
+            <X size={24} color={Colors.neutral.black} />
+          </TouchableOpacity>
 
-    <Text style={styles.modalTitle}>Product QR Code</Text>
-    
-    <Image
-      source={{ uri: generatedQRCode }}
-      style={styles.qrImage}
-      resizeMode="contain"
-    />
+          <Text style={styles.modalTitle}>Product QR Code</Text>
 
-    <TouchableOpacity
-      style={styles.saveButton}
-      onPress={saveImageToGallery}
-    >
-      <Text style={styles.saveButtonText}>Save to Gallery</Text>
-    </TouchableOpacity>
-  </View>
-</Modal>
+          <Image
+            source={{ uri: generatedQRCode }}
+            style={styles.qrImage}
+            resizeMode="contain"
+          />
 
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={() => {
+              setIsQRModalVisible(false);
+              Linking.openURL(generatedQRCode); // Open the QR code link in the browser
+            }}
+          >
+            <Text style={styles.saveButtonText}>Open in Browser</Text>
+          </TouchableOpacity>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -644,7 +630,7 @@ const styles = StyleSheet.create({
     left: 16,
     zIndex: 1,
   },
-  
+
   removeImageButton: {
     position: "absolute",
     top: 8,
@@ -805,26 +791,26 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   modal: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     margin: 0,
   },
   modalContent: {
     backgroundColor: Colors.neutral.white,
     borderRadius: 16,
     padding: 24,
-    width: '80%',
-    alignItems: 'center',
+    width: "80%",
+    alignItems: "center",
   },
   modalCloseButton: {
-    position: 'absolute',
+    position: "absolute",
     top: 16,
     right: 16,
     zIndex: 1,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     marginBottom: 16,
     color: Colors.neutral.black,
   },
