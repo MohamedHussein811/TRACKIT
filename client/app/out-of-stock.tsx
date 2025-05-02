@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -19,14 +19,28 @@ import {
 } from "lucide-react-native";
 import { products } from "@/mocks/products";
 import { Product } from "@/types";
+import api from "@/utils/apiClient";
 
 export default function OutOfStockScreen() {
   const router = useRouter();
+  let [originalProducts, setOriginalProducts] = useState<Product[]>([]);
 
   // Filter products that are out of stock
-  const outOfStockProducts = products.filter(
-    (product) => product.quantity <= 0
-  );
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await api.get("/products");
+        const outOfStock = res.data.filter(
+          (product: Product) => product.quantity === 0
+        );
+        setOriginalProducts(outOfStock);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleProductPress = (product: Product) => {
     router.push({
@@ -112,18 +126,6 @@ export default function OutOfStockScreen() {
           />
           <Text style={styles.viewButtonText}>View</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.orderButton}
-          onPress={() => handleOrderNow(item)}
-        >
-          <ShoppingCart
-            size={16}
-            color={Colors.neutral.white}
-            style={styles.buttonIcon}
-          />
-          <Text style={styles.orderButtonText}>Order</Text>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -151,13 +153,13 @@ export default function OutOfStockScreen() {
         <View style={styles.warningBanner}>
           <AlertTriangle size={20} color={Colors.status.error} />
           <Text style={styles.warningText}>
-            {outOfStockProducts.length} products are out of stock
+            {originalProducts.length} products are out of stock
           </Text>
         </View>
       </View>
 
       <FlatList
-        data={outOfStockProducts}
+        data={originalProducts}
         renderItem={renderProductItem}
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.listContent}

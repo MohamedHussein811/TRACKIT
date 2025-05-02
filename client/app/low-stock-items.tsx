@@ -32,7 +32,7 @@ export default function LowStockItemsScreen() {
       try {
         const response = await api.get("/products");
         const filteredProducts = response.data.filter(
-          (product: Product) => product.quantity < product.minStockLevel
+          (product: Product) => product.quantity === product.minStockLevel
         );
         setLowStockProducts(filteredProducts);
       } catch (error) {
@@ -193,15 +193,6 @@ export default function LowStockItemsScreen() {
           </View>
         )}
       />
-
-      <View style={styles.footer}>
-        <TouchableOpacity
-          style={styles.bulkOrderButton}
-          onPress={() => router.push("/new-order")}
-        >
-          <Text style={styles.bulkOrderButtonText}>Order Inventory</Text>
-        </TouchableOpacity>
-      </View>
     </SafeAreaView>
   );
 }

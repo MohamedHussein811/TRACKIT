@@ -39,6 +39,7 @@ export default function ProductDetailsScreen() {
       setIsLoading(true);
       const res = await api.get(`/products/${id}`);
       if (res.status === 200) {
+        console.log(`product is ${res.data.toString()}`);
         setProduct(res.data);
         console.log("Products fetched successfully:", res.data);
       } else {
@@ -156,7 +157,7 @@ export default function ProductDetailsScreen() {
       return;
     }
 
-    console.log(product.supplierId);
+    console.log(product.supplier);
 
     // Navigate to new order screen with this product pre-selected
     router.push({

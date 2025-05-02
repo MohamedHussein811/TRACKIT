@@ -1,53 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import Colors from '@/constants/colors';
-import { X, Package, Truck, CheckCircle, Clock, MapPin, Calendar } from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import api from '@/utils/apiClient';
+import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Stack, useRouter, useLocalSearchParams } from "expo-router";
+import Colors from "@/constants/colors";
+import {
+  X,
+  Package,
+  Truck,
+  CheckCircle,
+  Clock,
+  MapPin,
+  Calendar,
+} from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import api from "@/utils/apiClient";
 
 // HIGHLIGHT: New shipment tracking screen
 export default function ShipmentTrackingScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const orderId = params.id as string;
-  const [orders,setOrders] = useState([]);
-
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     // Fetch suppliers from the API
     const fetchSups = async () => {
       try {
-        const resOrders = await api.get<any[]>('/moderator/orders');
+        const resOrders = await api.get<any[]>("/moderator/orders");
         setOrders(resOrders.data.orders);
       } catch (error) {
-        console.error('Error fetching suppliers:', error);
+        console.error("Error fetching suppliers:", error);
       }
     };
 
     fetchSups();
   }, []);
-  
+
   // Find the order from mock data
-  const order = orders.find(o => o._id === orderId);
-  
+  const order = orders.find((o) => o._id === orderId);
+
   if (!order) {
     return (
       <SafeAreaView style={styles.container}>
-        <Stack.Screen 
+        <Stack.Screen
           options={{
-            title: 'Shipment Tracking',
+            title: "Shipment Tracking",
             headerLeft: () => (
               <TouchableOpacity onPress={() => router.back()}>
                 <X size={24} color={Colors.neutral.black} />
               </TouchableOpacity>
             ),
-          }} 
+          }}
         />
         <View style={styles.notFoundContainer}>
           <Text style={styles.notFoundText}>Order not found</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => router.back()}
           >
@@ -61,52 +75,56 @@ export default function ShipmentTrackingScreen() {
   // Mock shipment tracking data
   const shipmentData = {
     status: order.status,
-    trackingNumber: order.trackingNumber || 'Not available',
-    carrier: 'Express Logistics',
-    estimatedDelivery: order.expectedDelivery || 'Not available',
-    origin: 'Supplier Warehouse, CA',
-    destination: 'Your Business, NY',
+    trackingNumber: order.trackingNumber || "Not available",
+    carrier: "Express Logistics",
+    estimatedDelivery: order.expectedDelivery || "Not available",
+    origin: "Supplier Warehouse, CA",
+    destination: "Your Business, NY",
     trackingHistory: [
       {
-        status: 'Delivered',
-        location: 'Your Business, NY',
-        date: '2023-10-22',
-        time: '14:35',
-        completed: order.status === 'delivered',
+        status: "Delivered",
+        location: "Your Business, NY",
+        date: "2023-10-22",
+        time: "14:35",
+        completed: order.status === "delivered",
       },
       {
-        status: 'Out for Delivery',
-        location: 'Local Distribution Center, NY',
-        date: '2023-10-22',
-        time: '08:12',
-        completed: ['delivered', 'shipped'].includes(order.status),
+        status: "Out for Delivery",
+        location: "Local Distribution Center, NY",
+        date: "2023-10-22",
+        time: "08:12",
+        completed: ["delivered", "shipped"].includes(order.status),
       },
       {
-        status: 'Arrived at Distribution Center',
-        location: 'Regional Hub, NJ',
-        date: '2023-10-21',
-        time: '19:45',
-        completed: ['delivered', 'shipped'].includes(order.status),
+        status: "Arrived at Distribution Center",
+        location: "Regional Hub, NJ",
+        date: "2023-10-21",
+        time: "19:45",
+        completed: ["delivered", "shipped"].includes(order.status),
       },
       {
-        status: 'In Transit',
-        location: 'En Route',
-        date: '2023-10-20',
-        time: '10:30',
-        completed: ['delivered', 'shipped', 'processing'].includes(order.status),
+        status: "In Transit",
+        location: "En Route",
+        date: "2023-10-20",
+        time: "10:30",
+        completed: ["delivered", "shipped", "processing"].includes(
+          order.status
+        ),
       },
       {
-        status: 'Shipped',
-        location: 'Supplier Warehouse, CA',
-        date: '2023-10-19',
-        time: '15:22',
-        completed: ['delivered', 'shipped', 'processing'].includes(order.status),
+        status: "Shipped",
+        location: "Supplier Warehouse, CA",
+        date: "2023-10-19",
+        time: "15:22",
+        completed: ["delivered", "shipped", "processing"].includes(
+          order.status
+        ),
       },
       {
-        status: 'Order Processed',
-        location: 'Supplier Facility, CA',
-        date: '2023-10-18',
-        time: '09:15',
+        status: "Order Processed",
+        location: "Supplier Facility, CA",
+        date: "2023-10-18",
+        time: "09:15",
         completed: true,
       },
     ],
@@ -114,15 +132,15 @@ export default function ShipmentTrackingScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'delivered':
+      case "delivered":
         return Colors.status.success;
-      case 'shipped':
+      case "shipped":
         return Colors.status.info;
-      case 'processing':
+      case "processing":
         return Colors.status.warning;
-      case 'pending':
+      case "pending":
         return Colors.neutral.gray;
-      case 'cancelled':
+      case "cancelled":
         return Colors.status.error;
       default:
         return Colors.neutral.gray;
@@ -131,15 +149,15 @@ export default function ShipmentTrackingScreen() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'delivered':
+      case "delivered":
         return <CheckCircle size={24} color={Colors.status.success} />;
-      case 'shipped':
+      case "shipped":
         return <Truck size={24} color={Colors.status.info} />;
-      case 'processing':
+      case "processing":
         return <Package size={24} color={Colors.status.warning} />;
-      case 'pending':
+      case "pending":
         return <Clock size={24} color={Colors.neutral.gray} />;
-      case 'cancelled':
+      case "cancelled":
         return <X size={24} color={Colors.status.error} />;
       default:
         return <Package size={24} color={Colors.neutral.gray} />;
@@ -147,39 +165,56 @@ export default function ShipmentTrackingScreen() {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString || dateString === 'Not available') return dateString;
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+    if (!dateString || dateString === "Not available") return dateString;
+    const options: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString("en-US", options);
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <Stack.Screen 
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <Stack.Screen
         options={{
-          title: 'Shipment Tracking',
+          title: "Shipment Tracking",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.neutral.extraLightGray },
-          headerTitleStyle: { color: Colors.neutral.black, fontWeight: '600' },
+          headerTitleStyle: { color: Colors.neutral.black, fontWeight: "600" },
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <X size={24} color={Colors.neutral.black} />
             </TouchableOpacity>
           ),
-        }} 
+        }}
       />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.orderInfoCard}>
           <View style={styles.orderHeader}>
             <Text style={styles.orderNumber}>Order #{order.id}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(order.status) + '20' }]}>
+            <View
+              style={[
+                styles.statusBadge,
+                { backgroundColor: getStatusColor(order.status) + "20" },
+              ]}
+            >
               {getStatusIcon(order.status)}
-              <Text style={[styles.statusText, { color: getStatusColor(order.status) }]}>
+              <Text
+                style={[
+                  styles.statusText,
+                  { color: getStatusColor(order.status) },
+                ]}
+              >
                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
               </Text>
             </View>
           </View>
-          
+
           <View style={styles.orderDetails}>
             <View style={styles.orderDetail}>
               <Text style={styles.orderDetailLabel}>Supplier:</Text>
@@ -187,33 +222,45 @@ export default function ShipmentTrackingScreen() {
             </View>
             <View style={styles.orderDetail}>
               <Text style={styles.orderDetailLabel}>Order Date:</Text>
-              <Text style={styles.orderDetailValue}>{formatDate(order.orderDate)}</Text>
+              <Text style={styles.orderDetailValue}>
+                {formatDate(order.orderDate)}
+              </Text>
             </View>
             <View style={styles.orderDetail}>
               <Text style={styles.orderDetailLabel}>Total Amount:</Text>
-              <Text style={styles.orderDetailValue}>${order.totalAmount.toFixed(2)}</Text>
+              <Text style={styles.orderDetailValue}>
+                ${order.totalAmount.toFixed(2)}
+              </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.trackingInfoCard}>
           <Text style={styles.sectionTitle}>Shipment Information</Text>
-          
+
           <View style={styles.trackingDetails}>
             <View style={styles.trackingDetail}>
               <Text style={styles.trackingDetailLabel}>Tracking Number:</Text>
-              <Text style={styles.trackingDetailValue}>{shipmentData.trackingNumber}</Text>
+              <Text style={styles.trackingDetailValue}>
+                {shipmentData.trackingNumber}
+              </Text>
             </View>
             <View style={styles.trackingDetail}>
               <Text style={styles.trackingDetailLabel}>Carrier:</Text>
-              <Text style={styles.trackingDetailValue}>{shipmentData.carrier}</Text>
+              <Text style={styles.trackingDetailValue}>
+                {shipmentData.carrier}
+              </Text>
             </View>
             <View style={styles.trackingDetail}>
-              <Text style={styles.trackingDetailLabel}>Estimated Delivery:</Text>
-              <Text style={styles.trackingDetailValue}>{formatDate(shipmentData.estimatedDelivery)}</Text>
+              <Text style={styles.trackingDetailLabel}>
+                Estimated Delivery:
+              </Text>
+              <Text style={styles.trackingDetailValue}>
+                {formatDate(shipmentData.estimatedDelivery)}
+              </Text>
             </View>
           </View>
-          
+
           <View style={styles.locationContainer}>
             <View style={styles.locationItem}>
               <MapPin size={20} color={Colors.primary.burgundy} />
@@ -222,18 +269,20 @@ export default function ShipmentTrackingScreen() {
                 <Text style={styles.locationValue}>{shipmentData.origin}</Text>
               </View>
             </View>
-            
+
             <View style={styles.locationDivider}>
               <View style={styles.locationDividerLine} />
               <Truck size={20} color={Colors.neutral.gray} />
               <View style={styles.locationDividerLine} />
             </View>
-            
+
             <View style={styles.locationItem}>
               <MapPin size={20} color={Colors.status.success} />
               <View style={styles.locationTextContainer}>
                 <Text style={styles.locationLabel}>To</Text>
-                <Text style={styles.locationValue}>{shipmentData.destination}</Text>
+                <Text style={styles.locationValue}>
+                  {shipmentData.destination}
+                </Text>
               </View>
             </View>
           </View>
@@ -241,35 +290,57 @@ export default function ShipmentTrackingScreen() {
 
         <View style={styles.trackingHistoryCard}>
           <Text style={styles.sectionTitle}>Tracking History</Text>
-          
+
           <View style={styles.timeline}>
             {shipmentData.trackingHistory.map((event, index) => (
               <View key={index} style={styles.timelineItem}>
                 <View style={styles.timelineLeft}>
-                  <View 
+                  <View
                     style={[
                       styles.timelineDot,
-                      { backgroundColor: event.completed ? Colors.status.success : Colors.neutral.lightGray }
+                      {
+                        backgroundColor: event.completed
+                          ? Colors.status.success
+                          : Colors.neutral.lightGray,
+                      },
                     ]}
                   />
                   {index < shipmentData.trackingHistory.length - 1 && (
-                    <View 
+                    <View
                       style={[
                         styles.timelineLine,
-                        { backgroundColor: shipmentData.trackingHistory[index + 1].completed ? Colors.status.success : Colors.neutral.lightGray }
+                        {
+                          backgroundColor: shipmentData.trackingHistory[
+                            index + 1
+                          ].completed
+                            ? Colors.status.success
+                            : Colors.neutral.lightGray,
+                        },
                       ]}
                     />
                   )}
                 </View>
-                
+
                 <View style={styles.timelineContent}>
                   <Text style={styles.timelineStatus}>{event.status}</Text>
                   <Text style={styles.timelineLocation}>{event.location}</Text>
                   <View style={styles.timelineDateTime}>
-                    <Calendar size={14} color={Colors.neutral.gray} style={styles.timelineDateTimeIcon} />
-                    <Text style={styles.timelineDateTimeText}>{event.date}</Text>
-                    <Clock size={14} color={Colors.neutral.gray} style={styles.timelineDateTimeIcon} />
-                    <Text style={styles.timelineDateTimeText}>{event.time}</Text>
+                    <Calendar
+                      size={14}
+                      color={Colors.neutral.gray}
+                      style={styles.timelineDateTimeIcon}
+                    />
+                    <Text style={styles.timelineDateTimeText}>
+                      {event.date}
+                    </Text>
+                    <Clock
+                      size={14}
+                      color={Colors.neutral.gray}
+                      style={styles.timelineDateTimeIcon}
+                    />
+                    <Text style={styles.timelineDateTimeText}>
+                      {event.time}
+                    </Text>
                   </View>
                 </View>
               </View>
@@ -298,13 +369,13 @@ const styles = StyleSheet.create({
   },
   notFoundContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   notFoundText: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.darkGray,
     marginBottom: 16,
   },
@@ -317,7 +388,7 @@ const styles = StyleSheet.create({
   backButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   orderInfoCard: {
     backgroundColor: Colors.neutral.white,
@@ -331,26 +402,26 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   orderHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 16,
   },
   orderNumber: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
   },
   statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   statusText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     marginLeft: 6,
   },
   orderDetails: {
@@ -359,8 +430,8 @@ const styles = StyleSheet.create({
     paddingTop: 16,
   },
   orderDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   orderDetailLabel: {
@@ -369,7 +440,7 @@ const styles = StyleSheet.create({
   },
   orderDetailValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   trackingInfoCard: {
@@ -385,7 +456,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 16,
   },
@@ -393,8 +464,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   trackingDetail: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   trackingDetailLabel: {
@@ -403,7 +474,7 @@ const styles = StyleSheet.create({
   },
   trackingDetailValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   locationContainer: {
@@ -412,8 +483,8 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   locationItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   locationTextContainer: {
     marginLeft: 12,
@@ -424,12 +495,12 @@ const styles = StyleSheet.create({
   },
   locationValue: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.neutral.black,
   },
   locationDivider: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginVertical: 12,
   },
   locationDividerLine: {
@@ -452,12 +523,12 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
   },
   timelineItem: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
   },
   timelineLeft: {
     width: 24,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timelineDot: {
     width: 16,
@@ -479,7 +550,7 @@ const styles = StyleSheet.create({
   },
   timelineStatus: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginBottom: 4,
   },
@@ -489,8 +560,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   timelineDateTime: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   timelineDateTimeIcon: {
     marginRight: 4,
@@ -510,11 +581,11 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary.burgundy,
     borderRadius: 12,
     padding: 16,
-    alignItems: 'center',
+    alignItems: "center",
   },
   contactButtonText: {
     color: Colors.neutral.white,
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
