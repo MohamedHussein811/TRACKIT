@@ -74,7 +74,7 @@ export const createOrder = async (req, res) => {
 
 export const createUnitItemOrder = async (req, res) => {
   try {
-    const { productId } = req.params;
+    const { productId,userName } = req.params;
 
     const quantity = 1;
     const product = await Product.findById(productId);
@@ -94,7 +94,7 @@ export const createUnitItemOrder = async (req, res) => {
     // Create a new order with the unit item
     const orderData = {
       supplierId: null,
-      userName: req.userName,
+      userName: userName,
       items: [
         {
           productId: productId,

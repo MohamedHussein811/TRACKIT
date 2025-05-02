@@ -25,7 +25,7 @@ const orderSchema = new Schema(
     supplierId: {
       type: Schema.Types.ObjectId,
       ref: "users",
-      required: true,
+      
     },
     userName: {
       type: String,
