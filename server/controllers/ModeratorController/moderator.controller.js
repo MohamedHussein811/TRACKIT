@@ -47,7 +47,7 @@ export const changeOrderStatus = async (req, res) => {
       if (product) {
         if(status === 'shipped') {
           // Decrease the product quantity
-          product.quantity -= item.quantity;
+        //  product.quantity -= item.quantity;
         }
         else if(status === 'cancelled') {
           // Increase the product quantity
