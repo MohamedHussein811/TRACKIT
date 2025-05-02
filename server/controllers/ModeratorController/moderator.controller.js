@@ -20,6 +20,37 @@ export const allOrders = async (req, res) => {
   }
 };
 
+export const editProduct = async (req, res) => {
+  try {
+    const { productId, name, description, price, quantity, minStockLevel } = req.body;
+
+
+    // edit only the fields that are provided in the request body
+    const updateData = {
+      ...(name && { name }),
+      ...(description && { description }),
+      ...(price && { price }),
+      ...(quantity && { quantity }),
+      ...(minStockLevel && { minStockLevel }),
+    };
+
+    // Find the product by ID and update it
+    const product = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+
+    if (!product) {
+      console.log("Product not found:", productId);
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // Send the updated product as the response
+    res.status(200).json({ message: "Product updated successfully", product });
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 export const changeOrderStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;

@@ -4,9 +4,12 @@ import {
   allOrders,
   changeOrderStatus,
   getDashboardStats,
+  editProduct,
 } from "../controllers/ModeratorController/moderator.controller.js";
 
 const router = Router();
+
+router.post('/moderator/editproduct', editProduct);
 
 router.get(
   "/moderator/dashboard",
