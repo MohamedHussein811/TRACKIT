@@ -148,6 +148,12 @@ export const login = async (req, res) => {
       }
     );
 
+    if(user.hidden) {
+      return res.status(400).json({
+        message: "Your account is deleted. Please contact support.",
+      });
+    }
+
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.SECRET

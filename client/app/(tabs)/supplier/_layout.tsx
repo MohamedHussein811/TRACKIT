@@ -30,27 +30,6 @@ export default function TabLayoutOragnizer() {
 
   return (
     <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors.primary.burgundy,
-        tabBarInactiveTintColor: Colors.neutral.gray,
-        tabBarStyle: {
-          borderTopWidth: 1,
-          borderTopColor: Colors.neutral.extraLightGray,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-        },
-        headerStyle: {
-          backgroundColor: Colors.neutral.white,
-        },
-        headerTitleStyle: {
-          color: Colors.neutral.black,
-          fontWeight: "600",
-        },
-      }}
     >
       {}
       {(userType === "business" || userType === "organizer") && (

@@ -21,6 +21,7 @@ import { fetchSuppliers } from "@/mocks/suppliers";
 import { User } from "@/types";
 import Modal from "react-native-modal";
 import { Linking } from "react-native";
+import AppBar from "@/components/AppBar";
 
 export default function AddProductScreen() {
   const router = useRouter();
@@ -333,19 +334,12 @@ export default function AddProductScreen() {
           ),
         }}
       />
+      <AppBar title="Add Product" isCanGoBack={true} />
 
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          style={styles.backIconButton}
-          onPress={() => router.back()}
-        >
-          <View style={styles.iconBackground}>
-            <ArrowLeft size={20} color={Colors.neutral.black} />
-          </View>
-        </TouchableOpacity>
         <View style={styles.imageSection}>
           {productImage ? (
             <View style={styles.imageContainer}>

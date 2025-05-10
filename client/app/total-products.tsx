@@ -22,6 +22,7 @@ import {
 import { Product } from "@/types";
 import axios from "axios";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 export default function TotalProductsScreen() {
   const router = useRouter();
@@ -163,12 +164,7 @@ export default function TotalProductsScreen() {
           ),
         }}
       />
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-          <X size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
-      </View>
+      <AppBar title="All Products" isCanGoBack={true} />
 
       <View style={styles.header}>
         <View style={styles.searchContainer}>

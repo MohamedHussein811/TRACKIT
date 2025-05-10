@@ -354,6 +354,21 @@ export default function DashboardScreen() {
           <View style={styles.quickActionsGrid}>
             <TouchableOpacity
               style={styles.quickActionButton}
+              onPress={() => handleQuickAction("addProduct")}
+            >
+              <View
+                style={[
+                  styles.quickActionIcon,
+                  { backgroundColor: Colors.status.info },
+                ]}
+              >
+                <Package size={24} color={Colors.neutral.white} />
+              </View>
+              <Text style={styles.quickActionText}>Add Product</Text>
+            </TouchableOpacity>
+
+                        <TouchableOpacity
+              style={styles.quickActionButton}
               onPress={() => handleQuickAction("newOrder")}
             >
               <View

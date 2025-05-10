@@ -13,6 +13,7 @@ interface AuthState {
   token: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
+  deleteAccount: () => Promise<void>;
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   hasPermission: (permission: string) => boolean;
   initAuth: () => Promise<void>;
@@ -239,6 +240,40 @@ export const useAuthStore = create<AuthState>()(
           console.error('Signup error:', error);
           Alert.alert('Error', 'Failed to create user');
           throw error;
+        }
+      },
+
+      deleteAccount: async () => {
+        set({ isLoading: true });
+        try {
+          const { user, token } = get();
+          if (!user || !token) {
+            Alert.alert('Error', 'User not authenticated');
+            set({ isLoading: false });
+            return;
+          }
+      
+          const res = await api.delete(`/delete/user`);
+      
+          if (res.status !== 200) {
+            Alert.alert('Error', 'Failed to delete account');
+            set({ isLoading: false });
+            return;
+          }
+      
+          // Clear the token from AsyncStorage
+          await AsyncStorage.removeItem('access_token');
+          
+          set({
+            user: null,
+            isAuthenticated: false,
+            token: null,
+            isLoading: false,
+          });
+        } catch (error) {
+          set({ isLoading: false });
+          console.error('Delete account error:', error);
+          Alert.alert('Error', 'Failed to delete account');
         }
       },
       

@@ -12,6 +12,7 @@ import Colors from "@/constants/colors";
 import OrderCard from "@/components/OrderCard"; // Fixed import statement
 import { ArrowLeft, ShoppingCart, X } from "lucide-react-native";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 // HIGHLIGHT: New screen for pending orders
 export default function PendingOrdersScreen() {
@@ -29,6 +30,7 @@ export default function PendingOrdersScreen() {
         const filteredOrders = response.data.orders.filter(
           (order) => order.status === "pending"
         );
+        console.log("Pending Orders:", filteredOrders);
         setPendingOrders(filteredOrders);
       } catch (error) {
         console.error("Error fetching pending orders:", error);
@@ -60,12 +62,8 @@ export default function PendingOrdersScreen() {
           ),
         }}
       />
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-          <X size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
-      </View>
+      <AppBar title="Pending Orders" isCanGoBack={true} />
+
 
       <View style={styles.header}>
         <Text style={styles.subtitle}>

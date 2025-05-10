@@ -144,7 +144,7 @@ export const updateUser = async (req, res) => {
 
 export const deleteUser = async (req, res) => {
   try {
-    const userId = req.userId || req.params.id;
+    const userId = req.userId || req.params.id || req.body.userId;
 
     const user = await User.findById(userId);
 

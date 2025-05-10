@@ -318,186 +318,6 @@ Price: $${ticket.price.toFixed(2)}`,
     );
   };
 
-  /*
-  const renderEventCard = ({ item }: { item: Event }) => {
-    // Check if the user has already reserved a spot for this event
-    const isPurchased = soldTickets.some(
-      (ticket) =>
-        ticket.eventId._id === item._id &&
-        ticket.attendeeName === user.name &&
-        ticket.attendeeEmail === user.email
-    );
-    const isOrganizer = user.name === item.organizerName;
-    if (isOrganizer && !isPurchased) {
-      return (
-        <TouchableOpacity
-          style={styles.eventCard}
-          onPress={() => handleEventPress(item)}
-          activeOpacity={0.7}
-        >
-          <Image
-            source={{ uri: item.image }}
-            style={styles.eventImage}
-            resizeMode="cover"
-          />
-          {isOrganizer && (
-            <View style={styles.registeredBadge}>
-              <Text style={styles.registeredText}>Reserved</Text>
-            </View>
-          )}
-
-          <View style={styles.eventContent}>
-            <Text style={styles.eventTitle} numberOfLines={1}>
-              {item.title}
-            </Text>
-            <Text style={styles.eventCategory}>
-              {item.category || "General"}
-            </Text>
-
-            <View style={styles.eventDetails}>
-              <View style={styles.eventDetailItem}>
-                <Calendar
-                  size={16}
-                  color={Colors.neutral.gray}
-                  style={styles.eventDetailIcon}
-                />
-                <Text style={styles.eventDetailText}>
-                  {formatDate(item.date)}
-                </Text>
-              </View>
-
-              <View style={styles.eventDetailItem}>
-                <Clock
-                  size={16}
-                  color={Colors.neutral.gray}
-                  style={styles.eventDetailIcon}
-                />
-                <Text style={styles.eventDetailText}>{item.time}</Text>
-              </View>
-
-              <View style={styles.eventDetailItem}>
-                <MapPin
-                  size={16}
-                  color={Colors.neutral.gray}
-                  style={styles.eventDetailIcon}
-                />
-                <Text style={styles.eventDetailText} numberOfLines={1}>
-                  {item.location}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.eventFooter}>
-              <Text style={styles.eventPrice}>
-                {item.price === 0 || item.price === undefined
-                  ? "Free"
-                  : `$${item.price}`}
-              </Text>
-              <TouchableOpacity
-                style={[
-                  styles.eventButton,
-                  isOrganizer && styles.registeredButton,
-                ]}
-                onPress={() => handleReserveSpot(item)}
-              >
-                <Text
-                  style={[
-                    styles.eventButtonText,
-                    isOrganizer && styles.registeredButtonText,
-                  ]}
-                >
-                  {isOrganizer ? "Delete" : "Delete"}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableOpacity>
-      );
-    }
-    return (
-      <TouchableOpacity
-        style={styles.eventCard}
-        onPress={() => handleEventPress(item)}
-        activeOpacity={0.7}
-      >
-        <Image
-          source={{ uri: item.image }}
-          style={styles.eventImage}
-          resizeMode="cover"
-        />
-        {isPurchased && (
-          <View style={styles.registeredBadge}>
-            <Text style={styles.registeredText}>Reserved</Text>
-          </View>
-        )}
-
-        <View style={styles.eventContent}>
-          <Text style={styles.eventTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={styles.eventCategory}>{item.category || "General"}</Text>
-
-          <View style={styles.eventDetails}>
-            <View style={styles.eventDetailItem}>
-              <Calendar
-                size={16}
-                color={Colors.neutral.gray}
-                style={styles.eventDetailIcon}
-              />
-              <Text style={styles.eventDetailText}>
-                {formatDate(item.date)}
-              </Text>
-            </View>
-
-            <View style={styles.eventDetailItem}>
-              <Clock
-                size={16}
-                color={Colors.neutral.gray}
-                style={styles.eventDetailIcon}
-              />
-              <Text style={styles.eventDetailText}>{item.time}</Text>
-            </View>
-
-            <View style={styles.eventDetailItem}>
-              <MapPin
-                size={16}
-                color={Colors.neutral.gray}
-                style={styles.eventDetailIcon}
-              />
-              <Text style={styles.eventDetailText} numberOfLines={1}>
-                {item.location}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.eventFooter}>
-            <Text style={styles.eventPrice}>
-              {item.price === 0 || item.price === undefined
-                ? "Free"
-                : `$${item.price}`}
-            </Text>
-            <TouchableOpacity
-              style={[
-                styles.eventButton,
-                isPurchased && styles.registeredButton,
-              ]}
-              onPress={() => handleReserveSpot(item)}
-            >
-              <Text
-                style={[
-                  styles.eventButtonText,
-                  isPurchased && styles.registeredButtonText,
-                ]}
-              >
-                {isPurchased ? "View Details" : "Reserve Spot"}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-*/
   const renderEventRequestCard = ({ item }: { item: any }) => (
     <View style={styles.requestCard}>
       <View style={styles.requestHeader}>
@@ -710,10 +530,18 @@ Price: $${ticket.price.toFixed(2)}`,
         )}
       </View>
 
-      {isEventManager && activeTab === "upcoming" ? (
+{isEventManager && activeTab === "upcoming" ? (
         <FlatList
           data={soldTickets}
           renderItem={renderSoldTicketCard}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+        />
+      ) : isEventManager && activeTab === "past" ? (
+        <FlatList
+          data={events.filter(event => event.organizerName === user.name)}
+          renderItem={renderEventCard}
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}

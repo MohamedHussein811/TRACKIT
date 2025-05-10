@@ -24,6 +24,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import api from "@/utils/apiClient";
 import { useAuthStore } from "@/store/auth-store";
+import AppBar from "@/components/AppBar";
 
 export default function AddEventScreen() {
   const router = useRouter();
@@ -168,19 +169,13 @@ export default function AddEventScreen() {
         }}
       />
 
+      <AppBar title="Add Event" isCanGoBack={true} />
+
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ padding: 8 }}
-          >
-            <X size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
-        </View>
+
 
         <View style={styles.imageSection}>
           {eventImage ? (

@@ -24,6 +24,7 @@ import {
 } from "lucide-react-native";
 import { useAuthStore } from "@/store/auth-store";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 export default function EventsScreen() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -559,11 +560,10 @@ Price: $${ticket.price.toFixed(2)}`,
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom"]}>
+    <>      <AppBar title="Events" isCanGoBack={true} />
+        <SafeAreaView style={styles.container} edges={["bottom"]}>
       <View style={styles.header}>
-        <Text style={styles.title}>
-          {isEventManager ? "Event Management" : "Events"}
-        </Text>
+
 
         {!isEventManager && (
           <View style={styles.tabContainer}>
@@ -660,6 +660,8 @@ Price: $${ticket.price.toFixed(2)}`,
         </TouchableOpacity>
       )}
     </SafeAreaView>
+</>
+
   );
 }
 

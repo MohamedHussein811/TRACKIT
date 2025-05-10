@@ -22,11 +22,12 @@ import {
   ShieldCheck,
   Truck,
   FileText,
+  Trash,
 } from "lucide-react-native";
 import { LinearGradient } from "expo-linear-gradient";
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout,deleteAccount } = useAuthStore();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -188,6 +189,10 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>Log Out</Text>
         </TouchableOpacity>
 
+                <TouchableOpacity style={styles.logoutButton} onPress={deleteAccount}>
+          <Trash size={20} color={Colors.status.error} />
+          <Text style={styles.logoutText}>Delete Account</Text>
+        </TouchableOpacity>
         <Text style={styles.versionText}>Version 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>

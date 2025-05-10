@@ -25,6 +25,7 @@ import {
 import { useAuthStore } from "@/store/auth-store";
 import api from "@/utils/apiClient";
 import { Product } from "@/types";
+import AppBar from "@/components/AppBar";
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -218,7 +219,7 @@ export default function ProductDetailsScreen() {
           ),
         }}
       />
-
+<AppBar title="Product Details" isCanGoBack={true} />
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -228,14 +229,6 @@ export default function ProductDetailsScreen() {
           style={styles.productImage}
           resizeMode="cover"
         />
-        <TouchableOpacity
-          style={styles.backIconButton}
-          onPress={() => router.back()}
-        >
-          <View style={styles.iconBackground}>
-            <ArrowLeft size={20} color={Colors.neutral.black} />
-          </View>
-        </TouchableOpacity>
 
         <View style={styles.productInfo}>
           <View style={styles.header}>

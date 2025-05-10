@@ -24,6 +24,7 @@ import {
 import Colors from "@/constants/colors";
 import { Event } from "@/types";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 export default function EventDetailsScreen() {
   const { id, register } = useLocalSearchParams();
@@ -117,6 +118,8 @@ export default function EventDetailsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
+            <AppBar title="Event Details" isCanGoBack={true} />
+
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Event Image and Actions */}
@@ -126,15 +129,6 @@ export default function EventDetailsScreen() {
             style={styles.eventImage}
             resizeMode="cover"
           />
-
-          <TouchableOpacity
-            style={styles.backIconButton}
-            onPress={() => router.back()}
-          >
-            <View style={styles.iconBackground}>
-              <ArrowLeft size={20} color={Colors.neutral.black} />
-            </View>
-          </TouchableOpacity>
 
           <View style={styles.actionButtons}>
             <TouchableOpacity onPress={handleShare} style={styles.actionButton}>

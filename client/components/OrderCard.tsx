@@ -52,6 +52,16 @@ export default function OrderCard({ order, onPress }: OrderCardProps) {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
+  // Get supplier display name safely
+  const getSupplierDisplayName = () => {
+    // Check if supplierId exists and has either name or email property
+    if (!order.supplierId) {
+      return 'Supplier';
+    }
+    
+    return order.supplierId.name || order.supplierId.email || 'Unnamed Supplier';
+  };
+
   // Display the order card
   return (
     <TouchableOpacity 
@@ -70,16 +80,23 @@ export default function OrderCard({ order, onPress }: OrderCardProps) {
       </View>
       
       <View style={styles.details}>
-        <Text style={styles.supplierName}>{order.supplierId.name || order.supplierId.email}</Text>
+        <Text style={styles.supplierName}>{getSupplierDisplayName()}</Text>
         <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
       </View>
       
       <View style={styles.items}>
-        {order.items.map((orderItem, index) => (
-          <Text key={index} style={styles.itemText} numberOfLines={1}>
-            {orderItem.quantity}x {orderItem.productId.name}
-          </Text>
-        ))}
+        {order.items.map((orderItem, index) => {
+          // Safely access product name
+          const productName = orderItem.productId && orderItem.productId.name 
+            ? orderItem.productId.name 
+            : 'Unknown Product';
+            
+          return (
+            <Text key={index} style={styles.itemText} numberOfLines={1}>
+              {orderItem.quantity}x {productName}
+            </Text>
+          );
+        })}
       </View>
       
       <View style={styles.footer}>

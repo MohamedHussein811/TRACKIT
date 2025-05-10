@@ -1,22 +1,30 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '@/constants/colors';
-import { useAuthStore } from '@/store/auth-store';
-import { useRouter } from 'expo-router';
-import { 
-  User, 
-  Settings, 
-  Bell, 
-  CreditCard, 
-  HelpCircle, 
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import Colors from "@/constants/colors";
+import { useAuthStore } from "@/store/auth-store";
+import { useRouter } from "expo-router";
+import {
+  User,
+  Settings,
+  Bell,
+  CreditCard,
+  HelpCircle,
   LogOut,
   ChevronRight,
   ShieldCheck,
   Truck,
-  FileText
-} from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+  FileText,
+  Trash,
+} from "lucide-react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -24,39 +32,47 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     logout();
-    router.replace('/(auth)/login');
+    router.replace("/(auth)/login");
   };
 
   // HIGHLIGHT: Added navigation handlers for each profile menu item
   const handlePersonalInfo = () => {
-    router.push('/profile/personal-information');
+    router.push("/profile/personal-information");
   };
 
   const handleNotifications = () => {
-    router.push('/profile/notifications');
+    router.push("/profile/notifications");
   };
 
   const handlePaymentMethods = () => {
-    router.push('/profile/payment-methods');
+    router.push("/profile/payment-methods");
   };
 
   const handleSecurity = () => {
-    router.push('/profile/security');
+    router.push("/profile/security");
   };
 
   const handleReportsAnalytics = () => {
-    router.push('/profile/reports-analytics');
+    router.push("/profile/reports-analytics");
   };
 
   const handleShippingInfo = () => {
-    router.push('/profile/shipping-information');
+    router.push("/profile/shipping-information");
   };
 
   const handleHelpCenter = () => {
-    router.push('/profile/help-center');
+    router.push("/profile/help-center");
   };
 
-  const ProfileMenuItem = ({ icon, title, onPress }: { icon: React.ReactNode, title: string, onPress: () => void }) => (
+  const ProfileMenuItem = ({
+    icon,
+    title,
+    onPress,
+  }: {
+    icon: React.ReactNode;
+    title: string;
+    onPress: () => void;
+  }) => (
     <TouchableOpacity style={styles.menuItem} onPress={onPress}>
       <View style={styles.menuItemLeft}>
         {icon}
@@ -67,8 +83,11 @@ export default function ProfileScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={styles.container} edges={["bottom"]}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>Profile</Text>
           <TouchableOpacity style={styles.settingsButton}>
@@ -84,18 +103,26 @@ export default function ProfileScreen() {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.profileInfo}>
-              <Image 
-                source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e' }} 
-                style={styles.profileImage} 
+              <Image
+                source={{
+                  uri:
+                    user?.avatar ||
+                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
+                }}
+                style={styles.profileImage}
               />
               <View style={styles.profileTextContainer}>
                 <Text style={styles.profileName}>{user?.name}</Text>
                 <Text style={styles.profileEmail}>{user?.email}</Text>
                 <View style={styles.profileBadge}>
                   <Text style={styles.profileBadgeText}>
-                    {user?.userType === 'business' ? 'Business Owner' : 
-                     user?.userType === 'supplier' ? 'Supplier' :
-                     user?.userType === 'distributor' ? 'Distributor' : 'Event Organizer'}
+                    {user?.userType === "business"
+                      ? "Business Owner"
+                      : user?.userType === "supplier"
+                      ? "Supplier"
+                      : user?.userType === "distributor"
+                      ? "Distributor"
+                      : "Event Organizer"}
                   </Text>
                 </View>
               </View>
@@ -107,25 +134,25 @@ export default function ProfileScreen() {
           <Text style={styles.menuSectionTitle}>Account</Text>
           <View style={styles.menuContainer}>
             {/* HIGHLIGHT: Updated onPress handlers for each menu item */}
-            <ProfileMenuItem 
-              icon={<User size={20} color={Colors.primary.burgundy} />} 
-              title="Personal Information" 
-              onPress={handlePersonalInfo} 
+            <ProfileMenuItem
+              icon={<User size={20} color={Colors.primary.burgundy} />}
+              title="Personal Information"
+              onPress={handlePersonalInfo}
             />
-            <ProfileMenuItem 
-              icon={<Bell size={20} color={Colors.primary.burgundy} />} 
-              title="Notifications" 
-              onPress={handleNotifications} 
+            <ProfileMenuItem
+              icon={<Bell size={20} color={Colors.primary.burgundy} />}
+              title="Notifications"
+              onPress={handleNotifications}
             />
-            <ProfileMenuItem 
-              icon={<CreditCard size={20} color={Colors.primary.burgundy} />} 
-              title="Payment Methods" 
-              onPress={handlePaymentMethods} 
+            <ProfileMenuItem
+              icon={<CreditCard size={20} color={Colors.primary.burgundy} />}
+              title="Payment Methods"
+              onPress={handlePaymentMethods}
             />
-            <ProfileMenuItem 
-              icon={<ShieldCheck size={20} color={Colors.primary.burgundy} />} 
-              title="Security" 
-              onPress={handleSecurity} 
+            <ProfileMenuItem
+              icon={<ShieldCheck size={20} color={Colors.primary.burgundy} />}
+              title="Security"
+              onPress={handleSecurity}
             />
           </View>
         </View>
@@ -133,15 +160,15 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>Business</Text>
           <View style={styles.menuContainer}>
-            <ProfileMenuItem 
-              icon={<FileText size={20} color={Colors.primary.burgundy} />} 
-              title="Reports & Analytics" 
-              onPress={handleReportsAnalytics} 
+            <ProfileMenuItem
+              icon={<FileText size={20} color={Colors.primary.burgundy} />}
+              title="Reports & Analytics"
+              onPress={handleReportsAnalytics}
             />
-            <ProfileMenuItem 
-              icon={<Truck size={20} color={Colors.primary.burgundy} />} 
-              title="Shipping Information" 
-              onPress={handleShippingInfo} 
+            <ProfileMenuItem
+              icon={<Truck size={20} color={Colors.primary.burgundy} />}
+              title="Shipping Information"
+              onPress={handleShippingInfo}
             />
           </View>
         </View>
@@ -149,10 +176,10 @@ export default function ProfileScreen() {
         <View style={styles.menuSection}>
           <Text style={styles.menuSectionTitle}>Support</Text>
           <View style={styles.menuContainer}>
-            <ProfileMenuItem 
-              icon={<HelpCircle size={20} color={Colors.primary.burgundy} />} 
-              title="Help Center" 
-              onPress={handleHelpCenter} 
+            <ProfileMenuItem
+              icon={<HelpCircle size={20} color={Colors.primary.burgundy} />}
+              title="Help Center"
+              onPress={handleHelpCenter}
             />
           </View>
         </View>
@@ -160,6 +187,11 @@ export default function ProfileScreen() {
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <LogOut size={20} color={Colors.status.error} />
           <Text style={styles.logoutText}>Log Out</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Trash size={20} color={Colors.status.error} />
+          <Text style={styles.logoutText}>Delete Account</Text>
         </TouchableOpacity>
 
         <Text style={styles.versionText}>Version 1.0.0</Text>
@@ -177,14 +209,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
     padding: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.neutral.black,
   },
   settingsButton: {
@@ -193,7 +225,7 @@ const styles = StyleSheet.create({
   profileCard: {
     marginHorizontal: 16,
     borderRadius: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 24,
     shadowColor: Colors.neutral.black,
     shadowOffset: { width: 0, height: 2 },
@@ -205,8 +237,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   profileInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   profileImage: {
     width: 80,
@@ -220,7 +252,7 @@ const styles = StyleSheet.create({
   },
   profileName: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: Colors.neutral.white,
     marginBottom: 4,
   },
@@ -231,23 +263,23 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   profileBadge: {
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
     paddingHorizontal: 12,
     paddingVertical: 4,
     borderRadius: 12,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
   },
   profileBadgeText: {
     fontSize: 12,
     color: Colors.neutral.white,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   menuSection: {
     marginBottom: 24,
   },
   menuSectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
     color: Colors.neutral.black,
     marginHorizontal: 16,
     marginBottom: 8,
@@ -256,19 +288,19 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.white,
     borderRadius: 16,
     marginHorizontal: 16,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   menuItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: Colors.neutral.extraLightGray,
   },
   menuItemLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   menuItemText: {
     fontSize: 16,
@@ -276,9 +308,9 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   logoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: Colors.neutral.white,
     marginHorizontal: 16,
     padding: 16,
@@ -287,12 +319,12 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: "500",
     color: Colors.status.error,
     marginLeft: 8,
   },
   versionText: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 12,
     color: Colors.neutral.gray,
     marginBottom: 24,

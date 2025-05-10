@@ -20,6 +20,7 @@ import {
 import { products } from "@/mocks/products";
 import { Product } from "@/types";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 export default function OutOfStockScreen() {
   const router = useRouter();
@@ -142,12 +143,8 @@ export default function OutOfStockScreen() {
           ),
         }}
       />
-      <View style={{ flexDirection: "row", alignItems: "center" }}>
-        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
-          <X size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={{ marginLeft: 8, color: "black" }}>Back</Text>
-      </View>
+      <AppBar title="Out of Stock Items" isCanGoBack={true} />
+
 
       <View style={styles.header}>
         <View style={styles.warningBanner}>
