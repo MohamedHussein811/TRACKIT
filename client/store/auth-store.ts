@@ -101,52 +101,73 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       
-      login: async (email: string, password: string) => {
-        set({ isLoading: true });
-        try {
-          const res = await api.post('/login', { email, password });
+login: async (email: string, password: string) => {
+  set({ isLoading: true });
+  try {
+    const res = await api.post('/login', { email, password });
+    
+    // This block likely never runs because axios throws an error on non-2xx responses
+    if (res.status !== 200) {
+      Alert.alert('Error', res.data.message || 'Login failed');
+      set({ isLoading: false });
+      return;
+    }
+    
+    const userData = res.data.user;
+    const token = res.data.token;
+    
+    // Save token using our helper
+    await get().setToken(token);
+    
+    console.log('Login successful, got token');
+    console.log('userData', userData);
+    console.log('token', token);
+    
+    const user: User = {
+      _id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      businessName: userData.businessName,
+      userType: userData.userType,
+      avatar: userData.avatar,
+      rating: userData.rating,
+      productsCount: userData.productsCount,
+      ordersCount: userData.ordersCount,
+      eventsCount: userData.eventsCount,
+    };
+    
+    set({
+      user,
+      isAuthenticated: true,
+      isLoading: false
+    });
+  } catch (error: any) {
+    set({ isLoading: false });
+    console.error('Login error:', error);
+    
+    // Improved error handling to extract the server's error message
+    let errorMessage = 'Login failed';
+    
+    // Check if the error has a response from the server
+    if (error.response) {
+      // The server responded with a status code outside of 2xx range
+      // Extract the error message from the response data
+      errorMessage = error.response.data.message || 
+                    error.response.data.error || 
+                    `Error ${error.response.status}: ${errorMessage}`;
       
-          if (res.status !== 200) {
-            Alert.alert('Error', 'Invalid credentials');
-            set({ isLoading: false });
-            return;
-          }
-      
-          const userData = res.data.user;
-          const token = res.data.token;
-          
-          // Save token using our helper
-          await get().setToken(token);
-
-          console.log('Login successful, got token');
-          console.log('userData', userData);
-          console.log('token', token);
-          
-          const user: User = {
-            _id: userData.id,
-            name: userData.name,
-            email: userData.email,
-            businessName: userData.businessName,
-            userType: userData.userType,
-            avatar: userData.avatar,
-            rating: userData.rating,
-            productsCount: userData.productsCount,
-            ordersCount: userData.ordersCount,
-            eventsCount: userData.eventsCount,
-          };
-      
-          set({ 
-            user, 
-            isAuthenticated: true, 
-            isLoading: false
-          });
-        } catch (error) {
-          set({ isLoading: false });
-          console.error('Login error:', error);
-          Alert.alert('Error', 'Invalid credentials');
-          throw error;
-        }
-      },
+      console.log('Server response error:', error.response.data);
+    } else if (error.request) {
+      // The request was made but no response was received
+      errorMessage = 'No response from server. Please check your connection.';
+    } else {
+      // Something happened in setting up the request
+      errorMessage = error.message || errorMessage;
+    }
+    
+    Alert.alert('Error', errorMessage);
+  }
+},
       
       logout: async () => {
         try {
