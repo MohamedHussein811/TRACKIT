@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/auth-store';
 import ProductCard from '@/components/ProductCard';
 import { Product, User } from '@/types';
 import api from '@/utils/apiClient';
+import AppBar from '@/components/AppBar';
 
 export default function SupplierDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -110,6 +111,7 @@ export default function SupplierDetailsScreen() {
           ),
         }}
       />
+      <AppBar title='Supplier Details' isCanGoBack={true} />
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Image

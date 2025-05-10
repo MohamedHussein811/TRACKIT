@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/auth-store";
-import Colors from "@/constants/colors";
 import {
   Home,
   Package,
@@ -67,7 +66,7 @@ export default function TabLayoutOragnizer() {
       {}
       {userType === "business" && (
         <Tabs.Screen
-          name="supply-chain"
+          name="shipment-tracking"
           options={{
             title: "Supply Chain",
             tabBarIcon: ({ color }) => <Truck size={24} color={color} />,
