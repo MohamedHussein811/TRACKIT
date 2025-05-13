@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, MapPin, Plus, Edit2, Trash2, Check } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 // Mock shipping addresses
 const mockAddresses = [
@@ -113,6 +114,8 @@ export default function ShippingInformationScreen() {
           ),
         }} 
       />
+
+      <AppBar title='Shipping Information' isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {!editMode ? (

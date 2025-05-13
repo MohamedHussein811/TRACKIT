@@ -12,7 +12,7 @@ import {
 const router = Router();
 
 router.post("/products", authenticateToken, createProduct);
-router.get("/products", getProducts);
+router.get("/products", authenticateToken, getProducts);
 router.get("/products/:id", getProductById);
 router.put("/products/:id", authenticateToken, updateProduct);
 router.delete("/products/:id", authenticateToken, deleteProduct);

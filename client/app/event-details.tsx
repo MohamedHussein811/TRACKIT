@@ -7,7 +7,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
-  Linking,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -17,7 +16,6 @@ import {
   MapPin,
   Users,
   User,
-  ArrowLeft,
   Share2,
   Heart,
 } from "lucide-react-native";
@@ -25,21 +23,23 @@ import Colors from "@/constants/colors";
 import { Event } from "@/types";
 import api from "@/utils/apiClient";
 import AppBar from "@/components/AppBar";
+import { useAuthStore } from "@/store/auth-store";
 
 export default function EventDetailsScreen() {
-  const { id, register } = useLocalSearchParams();
+  const { id } = useLocalSearchParams();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
-  const [showPrompt, setShowPrompt] = useState(false);
+  const [soldTickets, setSoldTickets] = useState<any[]>([]); // Replace with your ticket type
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const res = await api.get("/events");
+        const soldRes = await api.get("/reservations");
         setEvents(res.data);
-        console.log("Fetched events:", res.data);
+        setSoldTickets(soldRes.data);
       } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error("Error fetching events or tickets:", error);
       }
     };
 
@@ -48,11 +48,14 @@ export default function EventDetailsScreen() {
 
   const event = useMemo(() => events.find((e) => e._id === id), [events, id]);
 
-  useEffect(() => {
-    if (register === "true" && event && !event.isRegistered) {
-      setShowPrompt(true);
-    }
-  }, [register, event]);
+  // Check if the user is registered
+  const { user } = useAuthStore();
+  const isRegistered = soldTickets.some(
+    (ticket) =>
+      ticket.eventId._id === event?._id &&
+      ticket.attendeeName === user.name &&
+      ticket.attendeeEmail === user.email
+  );
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString("en-US", {
@@ -65,7 +68,7 @@ export default function EventDetailsScreen() {
   const handleRegister = () => {
     if (!event) return;
 
-    if (register === "false") {
+    if (isRegistered) {
       return Alert.alert("Already Registered", "You're already registered.");
     }
 
@@ -118,11 +121,9 @@ export default function EventDetailsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen options={{ headerShown: false }} />
-            <AppBar title="Event Details" isCanGoBack={true} />
-
+      <AppBar title="Event Details" isCanGoBack={true} />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Event Image and Actions */}
         <View style={styles.imageContainer}>
           <Image
             source={{ uri: event.image }}
@@ -132,48 +133,32 @@ export default function EventDetailsScreen() {
 
           <View style={styles.actionButtons}>
             <TouchableOpacity onPress={handleShare} style={styles.actionButton}>
-              <View style={styles.iconBackground}>
-                <Share2 size={20} color={Colors.neutral.black} />
-              </View>
+              <Share2 size={20} color={Colors.neutral.black} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSave} style={styles.actionButton}>
-              <View style={styles.iconBackground}>
-                <Heart size={20} color={Colors.neutral.black} />
-              </View>
+              <Heart size={20} color={Colors.neutral.black} />
             </TouchableOpacity>
           </View>
 
-          {register === "false" && (
+          {isRegistered && (
             <View style={styles.registeredBadge}>
               <Text style={styles.registeredText}>Registered</Text>
             </View>
           )}
         </View>
 
-        {/* Event Info */}
         <View style={styles.contentContainer}>
-          <View style={styles.header}>
-            <Text style={styles.title}>{event.title}</Text>
-            <Text style={styles.category}>{event.category || "General"}</Text>
-          </View>
+          <Text style={styles.title}>{event.title}</Text>
+          <Text style={styles.category}>{event.category || "General"}</Text>
 
           <View style={styles.infoSection}>
             <InfoItem icon={Calendar} text={formatDate(event.date)} />
             <InfoItem icon={Clock} text={event.time} />
             <InfoItem icon={MapPin} text={event.location} />
-            <InfoItem
-              icon={User}
-              text={`Organized by ${event?.organizerName}`}
-            />
-            {event.attendees && (
-              <InfoItem icon={Users} text={`${event.attendees} Attendees`} />
-            )}
+            <InfoItem icon={User} text={`Organized by ${event.organizerName}`} />
           </View>
 
-          <View style={styles.descriptionSection}>
-            <Text style={styles.sectionTitle}>About Event</Text>
-            <Text style={styles.description}>{event.description}</Text>
-          </View>
+          <Text style={styles.description}>{event.description}</Text>
 
           <View style={styles.priceSection}>
             <Text style={styles.priceLabel}>Price</Text>
@@ -190,65 +175,34 @@ export default function EventDetailsScreen() {
         <TouchableOpacity
           style={[
             styles.registerButton,
-            register === "false" && styles.registeredButton,
+            isRegistered && styles.registeredButton,
           ]}
           onPress={handleRegister}
         >
           <Text
             style={[
               styles.registerButtonText,
-              event.isRegistered && styles.registeredButtonText,
+              isRegistered && styles.registeredButtonText,
             ]}
           >
-            {register == "false" ? "Already Registered" : "Register Now"}
+            {isRegistered ? "Already Registered" : "Register Now"}
           </Text>
         </TouchableOpacity>
       </View>
-
-      {/* Prompt */}
-      {showPrompt && (
-        <View style={styles.promptOverlay}>
-          <View style={styles.promptContainer}>
-            <Text style={styles.promptTitle}>Register for Event</Text>
-            <Text style={styles.promptDescription}>
-              Would you like to register for "{event.title}"?
-              {event && event.price && event.price > 0
-                ? `\n\nPrice: $${event?.price?.toFixed(2)}`
-                : ""}
-            </Text>
-            <View style={styles.promptButtons}>
-              <TouchableOpacity
-                onPress={() => setShowPrompt(false)}
-                style={styles.promptCancelButton}
-              >
-                <Text style={styles.promptCancelText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setShowPrompt(false);
-                  handleRegister();
-                }}
-                style={styles.promptConfirmButton}
-              >
-                <Text style={styles.promptConfirmText}>Register</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
 
-// Reusable info item
+// Reusable InfoItem component
 function InfoItem({ icon: Icon, text }: { icon: any; text: string }) {
   return (
-    <View style={styles.infoItem}>
-      <Icon size={20} color={Colors.neutral.gray} style={styles.infoIcon} />
-      <Text style={styles.infoText}>{text}</Text>
+    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+      <Icon size={20} color={Colors.neutral.gray} style={{ marginRight: 8 }} />
+      <Text>{text}</Text>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

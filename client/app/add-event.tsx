@@ -7,25 +7,17 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  Platform,
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import Colors from "@/constants/colors";
-import {
-  Camera,
-  X,
-  Calendar,
-  Clock,
-  MapPin,
-  DollarSign,
-} from "lucide-react-native";
+import { Camera, X, Calendar, Clock, DollarSign } from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import api from "@/utils/apiClient";
 import { useAuthStore } from "@/store/auth-store";
 import AppBar from "@/components/AppBar";
-
 export default function AddEventScreen() {
   const router = useRouter();
   const [eventImage, setEventImage] = useState<string | null>(null);
@@ -40,6 +32,8 @@ export default function AddEventScreen() {
     image: null as string | null,
   });
   const { user } = useAuthStore();
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
 
   const handleInputChange = (field: string, value: string) => {
     setFormData({
@@ -61,85 +55,92 @@ export default function AddEventScreen() {
     }
   };
 
+const uploadImage = async (uri: string) => {
+  const formData = new FormData();
+  
+  // Check if URI is valid
+  if (!uri) {
+    Alert.alert("Error", "Image URI is missing.");
+    return null;
+  }
+
+  const imageUri = uri.startsWith("file://") ? uri : `file://${uri}`;  // Ensure valid file URI format
+
+  // Create a new file object for the image
+  const imageFile = {
+    uri: imageUri,
+    type: "image/jpeg", // You may adjust the MIME type if needed
+    name: "event_image.jpg",
+  };
+
+  // Append to FormData
+  formData.append("file", imageFile);
+  formData.append("preset", "neena-bot");
+
+
+  console.log("Uploading image with FormData:", formData);  // Log the form data for debugging
+
+  try {
+    const imageResponse = await fetch(
+      "https://api-novatech.vercel.app/upload-file",
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    if (!imageResponse.ok) {
+      const errorData = await imageResponse.json();
+      console.error("Image upload error:", errorData);
+      Alert.alert("Error", "Failed to upload event image");
+      return null;
+    }
+
+    const imageData = await imageResponse.json();
+    console.log("Image uploaded successfully:", imageData);
+    return imageData.secure_url;
+  } catch (error) {
+    console.error("Image upload exception:", error);
+    Alert.alert("Error", "An error occurred while uploading the image");
+    return null;
+  }
+};
+
+
   const handleSave = async () => {
-    // Validate form data
     if (
       !formData.title ||
-      !formData.description ||
+      !formData.description.trim() ||
       !formData.date ||
       !formData.time ||
-      !formData.location
+      !formData.location ||
+      !formData.category ||
+      !formData.price
     ) {
       Alert.alert("Error", "Please fill in all required fields");
       return;
     }
 
-    // Create a proper FormData object for the image upload
-    const imageFormData = new FormData();
-
+    let imageUrl = formData.image;
     if (eventImage) {
-      // Create the file object correctly for React Native
-      const fileNameParts = eventImage.split("/");
-      const fileName = fileNameParts[fileNameParts.length - 1];
-
-      // Create a file object that matches what the server expects
-      const fileObj = {
-        uri: eventImage,
-        name: fileName,
-        type: "image/webp", // You might want to determine this dynamically based on the file
-      };
-
-      // Append as a file, not a string
-      imageFormData.append("file", fileObj as any);
-      imageFormData.append("preset", "neena-bot");
+      const uploadedImageUrl = await uploadImage(eventImage);
+      if (!uploadedImageUrl) return; // Stop if image upload fails
+      imageUrl = uploadedImageUrl;
     }
 
-    let imageUrl = null;
+    const eventData = {
+      ...formData,
+      image: imageUrl,
+      organizerId: user?._id,
+      organizerName: user?.name,
+    };
 
-    if (eventImage) {
-      try {
-        const imageResponse = await fetch(
-          "https://api-novatech.vercel.app/upload-file",
-          {
-            method: "POST",
-            body: imageFormData,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (!imageResponse.ok) {
-          const errorData = await imageResponse.json();
-          console.error("Image upload error:", errorData);
-          Alert.alert("Error", "Failed to upload Event image");
-          return;
-        }
-
-        const imageData = await imageResponse.json();
-
-        imageUrl = imageData.secure_url;
-      } catch (error) {
-        console.error("Image upload exception:", error);
-        Alert.alert("Error", "An error occurred while uploading the image");
-        return;
-      }
-    }
-
-    // Now save the Event with the image URL if available
     try {
-      const eventData = {
-        ...formData,
-        image: imageUrl,
-        organizerId: user?._id,
-        organizerName: user?.name,
-      };
-
-      console.log(user?._id);
       const res = await api.post("/events", eventData);
-
       if (res.status !== 201) {
-        console.error("Event creation error:", res.data);
         Alert.alert("Error", "Failed to add event");
         return;
       }
@@ -153,6 +154,25 @@ export default function AddEventScreen() {
     }
   };
 
+    const handleDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      const formattedDate = selectedDate.toISOString().split("T")[0];
+      setFormData({ ...formData, date: formattedDate });
+    }
+  };
+
+  const handleTimeChange = (event: any, selectedTime?: Date) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      const formattedTime = selectedTime.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      setFormData({ ...formData, time: formattedTime });
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <Stack.Screen
@@ -160,7 +180,6 @@ export default function AddEventScreen() {
           title: "Add Event",
           headerShadowVisible: false,
           headerStyle: { backgroundColor: Colors.neutral.extraLightGray },
-          headerTitleStyle: { color: Colors.neutral.black, fontWeight: "600" },
           headerLeft: () => (
             <TouchableOpacity onPress={() => router.back()}>
               <X size={56} color={Colors.neutral.black} />
@@ -175,19 +194,9 @@ export default function AddEventScreen() {
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-
-
         <View style={styles.imageSection}>
           {eventImage ? (
-            <View style={styles.imageContainer}>
-              <Image source={{ uri: eventImage }} style={styles.eventImage} />
-              <TouchableOpacity
-                style={styles.removeImageButton}
-                onPress={() => setEventImage(null)}
-              >
-                <X size={20} color={Colors.neutral.white} />
-              </TouchableOpacity>
-            </View>
+            <Image source={{ uri: eventImage }} style={styles.eventImage} />
           ) : (
             <TouchableOpacity
               style={styles.imagePlaceholder}
@@ -203,116 +212,78 @@ export default function AddEventScreen() {
 
         <View style={styles.formSection}>
           <Text style={styles.sectionTitle}>Event Details</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter event title"
+            value={formData.title}
+            onChangeText={(text) => handleInputChange("title", text)}
+          />
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Event Title</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter event title"
-              value={formData.title}
-              onChangeText={(text) => handleInputChange("title", text)}
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            placeholder="Enter event description"
+            value={formData.description}
+            onChangeText={(text) => handleInputChange("description", text)}
+            multiline
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter event category"
+            value={formData.category}
+            onChangeText={(text) => handleInputChange("category", text)}
+          />
+
+          <TextInput
+            style={styles.input}
+            placeholder="Enter event price"
+            value={formData.price}
+            onChangeText={(text) => handleInputChange("price", text)}
+            keyboardType="numeric"
+          />
+
+          <TouchableOpacity
+            style={styles.datePicker}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Calendar size={20} color={Colors.neutral.gray} />
+            <Text style={styles.dateText}>
+              {formData.date || "Select Date"}
+            </Text>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              mode="date"
+              value={new Date()}
+              onChange={handleDateChange}
             />
-          </View>
+          )}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Description</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Enter event description"
-              value={formData.description}
-              onChangeText={(text) => handleInputChange("description", text)}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
+          <TouchableOpacity
+            style={styles.datePicker}
+            onPress={() => setShowTimePicker(true)}
+          >
+            <Clock size={20} color={Colors.neutral.gray} />
+            <Text style={styles.dateText}>
+              {formData.time || "Select Time"}
+            </Text>
+          </TouchableOpacity>
+
+          {showTimePicker && (
+            <DateTimePicker
+              mode="time"
+              value={new Date()}
+              onChange={handleTimeChange}
             />
-          </View>
+          )}
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Category</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. Workshop, Conference, Networking"
-              value={formData.category}
-              onChangeText={(text) => handleInputChange("category", text)}
-            />
-          </View>
-        </View>
-
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Date & Time</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Date</Text>
-            <View style={styles.iconInput}>
-              <Calendar
-                size={20}
-                color={Colors.neutral.gray}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.iconTextInput}
-                placeholder="YYYY-MM-DD"
-                value={formData.date}
-                onChangeText={(text) => handleInputChange("date", text)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Time</Text>
-            <View style={styles.iconInput}>
-              <Clock
-                size={20}
-                color={Colors.neutral.gray}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.iconTextInput}
-                placeholder="HH:MM - HH:MM"
-                value={formData.time}
-                onChangeText={(text) => handleInputChange("time", text)}
-              />
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Location & Price</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Location</Text>
-            <View style={styles.iconInput}>
-              <MapPin
-                size={20}
-                color={Colors.neutral.gray}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.iconTextInput}
-                placeholder="Enter event location"
-                value={formData.location}
-                onChangeText={(text) => handleInputChange("location", text)}
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Price ($)</Text>
-            <View style={styles.iconInput}>
-              <DollarSign
-                size={20}
-                color={Colors.neutral.gray}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.iconTextInput}
-                placeholder="0.00 (leave empty for free event)"
-                value={formData.price}
-                onChangeText={(text) => handleInputChange("price", text)}
-                keyboardType="decimal-pad"
-              />
-            </View>
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter event location"
+            value={formData.location}
+            onChangeText={(text) => handleInputChange("location", text)}
+          />
         </View>
       </ScrollView>
 
@@ -331,107 +302,74 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.neutral.extraLightGray,
   },
   scrollView: {
-    flex: 1,
     padding: 16,
   },
+  textArea: {
+    height: 100,
+    textAlignVertical: "top",
+  },
   imageSection: {
-    marginBottom: 24,
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  eventImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 12,
   },
   imagePlaceholder: {
     width: "100%",
     height: 200,
-    backgroundColor: Colors.neutral.white,
     borderRadius: 12,
+    backgroundColor: Colors.neutral.lightGray,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 1,
-    borderColor: Colors.neutral.extraLightGray,
-    borderStyle: "dashed",
   },
   imagePlaceholderText: {
     marginTop: 8,
-    fontSize: 14,
-    color: Colors.neutral.gray,
-  },
-  imageContainer: {
-    width: "100%",
-    height: 200,
-    borderRadius: 12,
-    overflow: "hidden",
-    position: "relative",
-  },
-  eventImage: {
-    width: "100%",
-    height: "100%",
-  },
-  removeImageButton: {
-    position: "absolute",
-    top: 8,
-    right: 8,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    borderRadius: 20,
-    width: 32,
-    height: 32,
-    justifyContent: "center",
-    alignItems: "center",
+    color: Colors.neutral.black,
   },
   formSection: {
     backgroundColor: Colors.neutral.white,
     borderRadius: 12,
     padding: 16,
-    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: Colors.neutral.black,
-    marginBottom: 16,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  inputLabel: {
-    fontSize: 14,
-    color: Colors.neutral.gray,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: Colors.neutral.extraLightGray,
+    borderWidth: 1,
+    borderColor: Colors.neutral.lightGray,
     borderRadius: 8,
     padding: 12,
-    fontSize: 16,
-    color: Colors.neutral.black,
+    marginBottom: 16,
+    backgroundColor: Colors.neutral.white,
   },
-  textArea: {
-    minHeight: 100,
-    textAlignVertical: "top",
-  },
-  iconInput: {
-    backgroundColor: Colors.neutral.extraLightGray,
-    borderRadius: 8,
+  datePicker: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-  },
-  inputIcon: {
-    marginRight: 8,
-  },
-  iconTextInput: {
-    flex: 1,
+    borderWidth: 1,
+    borderColor: Colors.neutral.lightGray,
+    borderRadius: 8,
     padding: 12,
-    fontSize: 16,
-    color: Colors.neutral.black,
+    marginBottom: 16,
+    backgroundColor: Colors.neutral.white,
+  },
+  dateText: {
+    marginLeft: 8,
+    color: Colors.neutral.gray,
   },
   footer: {
     padding: 16,
     backgroundColor: Colors.neutral.white,
-    borderTopWidth: 1,
-    borderTopColor: Colors.neutral.extraLightGray,
   },
+
   saveButton: {
     backgroundColor: Colors.primary.burgundy,
-    borderRadius: 12,
-    padding: 16,
+    paddingVertical: 16,
+    borderRadius: 8,
     alignItems: "center",
   },
   saveButtonText: {

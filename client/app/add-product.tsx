@@ -42,7 +42,6 @@ export default function AddProductScreen() {
     image: null as string | null,
   });
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [showSupplierDropdown, setShowSupplierDropdown] = useState(false);
   const [newCategory, setNewCategory] = useState("");
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [generatedQRCode, setGeneratedQRCode] = useState<string>("");
@@ -131,97 +130,7 @@ export default function AddProductScreen() {
     setShowAddCategory(false);
     setShowCategoryDropdown(false);
   };
-  /*
-  const handleSave = async () => {
-    // Validate form data
-    if (!formData.name) {
-      Alert.alert("Error", "Product name is required");
-      return;
-    }
-
-    if (!formData.price) {
-      Alert.alert("Error", "Product price is required");
-      return;
-    }
-
-    // Create a proper FormData object for the image upload
-    const imageFormData = new FormData();
-
-    if (productImage) {
-      // Create the file object correctly for React Native
-      const fileNameParts = productImage.split("/");
-      const fileName = fileNameParts[fileNameParts.length - 1];
-
-      // Create a file object that matches what the server expects
-      const fileObj = {
-        uri: productImage,
-        name: fileName,
-        type: "image/jpeg", // You might want to determine this dynamically based on the file
-      };
-
-      // Append as a file, not a string
-      imageFormData.append("file", fileObj as any);
-      imageFormData.append("preset", "neena-bot");
-    }
-
-    let imageUrl = null;
-
-    if (productImage) {
-      try {
-        const imageResponse = await fetch(
-          "https://api-novatech.vercel.app/upload-file",
-          {
-            method: "POST",
-            body: imageFormData,
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-
-        if (!imageResponse.ok) {
-          const errorData = await imageResponse.json();
-          console.error("Image upload error:", errorData);
-          Alert.alert("Error", "Failed to upload product image");
-          return;
-        }
-
-        const imageData = await imageResponse.json();
-        console.log("Image upload successful:", imageData);
-        imageUrl = imageData.secure_url;
-      } catch (error) {
-        console.error("Image upload exception:", error);
-        Alert.alert("Error", "An error occurred while uploading the image");
-        return;
-      }
-    }
-
-    // Now save the product with the image URL if available
-    try {
-      const productData = {
-        ...formData,
-        image: imageUrl,
-      };
-
-      console.log("Sending product data:", productData);
-
-      const res = await api.post("/products", productData);
-
-      if (res.status !== 201) {
-        console.error("Product creation error:", res.data);
-        Alert.alert("Error", "Failed to add product");
-        return;
-      }
-
-      Alert.alert("Success", "Product added successfully", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    } catch (error) {
-      console.error("Product creation exception:", error);
-      Alert.alert("Error", "An error occurred while saving the product");
-    }
-  };
-  */
+  
   const handleSave = async () => {
     // Validate form data
     if (!formData.name) {
@@ -304,15 +213,6 @@ export default function AddProductScreen() {
 
       setGeneratedQRCode(res.data.sku); // Set the generated QR code URL
 
-      Alert.alert("Success", "Product added successfully", [
-        {
-          text: "OK",
-          onPress: () => {
-            router.back();
-            setGeneratedQRCode(""); // Clear QR code when navigating back
-          },
-        },
-      ]);
     } catch (error) {
       console.error("Product creation exception:", error);
       Alert.alert("Error", "An error occurred while saving the product");
@@ -511,19 +411,6 @@ export default function AddProductScreen() {
           </View>
         </View>
 
-        <View style={styles.formSection}>
-          <Text style={styles.sectionTitle}>Supplier Information</Text>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.inputLabel}>Supplier</Text>
-            <TouchableOpacity
-              style={styles.inputGroup}
-              onPress={() => setShowSupplierDropdown(!showSupplierDropdown)}
-            >
-              <Text>{user?.name}</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
       </ScrollView>
 
       <View style={styles.footer}>

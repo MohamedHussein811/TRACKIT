@@ -1,6 +1,8 @@
 import Order from "../../models/Orders.js";
 import Product from '../../models/Products.js';
 import Event from "../../models/Events.js";
+import User from "../../models/Users.js";
+import Reservation from "../../models/Reservation.js";
 export const allOrders = async (req, res) => {
   try {
     // Fetch all orders from the database, optionally you can sort or paginate
@@ -102,8 +104,18 @@ export const changeOrderStatus = async (req, res) => {
 
 export const getDashboardStats = async (req, res) => {
   try {
+
+    const userId = req.userId; // Assuming you have user ID from the request
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const userName = user.name; // Assuming the user has a name field
+
+
     // Get total products
-    const totalProducts = await Product.countDocuments();
+    const totalProducts = await Product.countDocuments({ ownerId: userId });
 
     // Get low stock items
     const lowStockItemsData = await Product.aggregate([
@@ -123,10 +135,11 @@ export const getDashboardStats = async (req, res) => {
     const lowStockItems = lowStockItemsData.length ? lowStockItemsData[0].count : 0;
     
     // Get pending orders
-    const pendingOrders = await Order.countDocuments({ status: 'pending' });
+    const pendingOrders = await Order.countDocuments({ status: 'pending', userName  });
 
     // Get upcoming events length (assuming you have an events collection)
     const upcomingEvents = await Event.countDocuments();
+    const myreservedEvents = await Reservation.countDocuments({attendeeName: userName});
      
 
     // Get recent sales (example: calculate total sales in the last 30 days)
@@ -169,6 +182,7 @@ export const getDashboardStats = async (req, res) => {
       lowStockItems,
       pendingOrders,
       upcomingEvents,
+      myreservedEvents,
       recentSales,
       topProducts,
     };

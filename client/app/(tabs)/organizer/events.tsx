@@ -224,7 +224,32 @@ Price: $${ticket.price.toFixed(2)}`,
               </Text>
               {/* Show the Delete button for the organizer */}
               {isOrganizer && (
-                <TouchableOpacity style={styles.eventButton} onPress={() => {}}>
+                <TouchableOpacity style={styles.eventButton} onPress={() => {
+                  Alert.alert(
+                    "Delete Event",
+                    `Are you sure you want to delete "${item.title}"?`,
+                    [
+                      {
+                        text: "Cancel",
+                        style: "cancel",
+                      },
+                      {
+                        text: "Delete",
+                        onPress: async () => {
+                          await api.delete(`/events/${item._id}`);
+                          setEvents((prevEvents) =>
+                            prevEvents.filter((event) => event._id !== item._id)
+                          );
+                          setSoldTickets((prevTickets) =>
+                            prevTickets.filter(
+                              (ticket) => ticket.eventId._id !== item._id
+                            )
+                          );
+                        },
+                      },
+                    ]
+                  );
+                }}>
                   <Text style={styles.eventButtonText}>Delete</Text>
                 </TouchableOpacity>
               )}
@@ -441,9 +466,6 @@ Price: $${ticket.price.toFixed(2)}`,
       </View>
 
       <View style={styles.ticketFooter}>
-        <View style={styles.ticketTypeBadge}>
-          <Text style={styles.ticketTypeText}>{item.ticketType}</Text>
-        </View>
         <Text style={styles.viewDetailsText}>View Details</Text>
       </View>
     </TouchableOpacity>

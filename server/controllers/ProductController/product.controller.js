@@ -54,7 +54,9 @@ export const createProduct = async (req, res) => {
 // Get all products
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find({
+      ownerId: req.userId, // Filter products by the logged-in user's ID
+    });
     res.status(200).json(products);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -64,7 +66,7 @@ export const getProducts = async (req, res) => {
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate({
-      path: "supplierId",
+      path: "ownerId",
       select: "name email phone", // Adjust fields based on your User schema
     });
 

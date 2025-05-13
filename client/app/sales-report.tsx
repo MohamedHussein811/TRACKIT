@@ -19,6 +19,7 @@ import {
   Calendar,
   ShoppingCart,
 } from "lucide-react-native";
+import AppBar from "@/components/AppBar";
 
 // Mock data for sales report
 const salesData = {
@@ -138,17 +139,9 @@ export default function SalesReportScreen() {
           ),
         }}
       />
+      <AppBar title="Sales Report"  isCanGoBack/>
 
       <View style={styles.timeRangeSelector}>
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <TouchableOpacity
-            onPress={() => router.back()}
-            style={{ padding: 8 }}
-          >
-            <X size={24} color="black" />
-          </TouchableOpacity>
-          <Text style={{ marginLeft: 8, color: "black" }}></Text>
-        </View>
         <Text style={styles.timeRangeLabel}>Time Range:</Text>
         <TouchableOpacity
           style={styles.timeRangeButton}
@@ -318,7 +311,11 @@ export default function SalesReportScreen() {
 
       <View style={styles.footer}>
         <TouchableOpacity style={styles.exportButton}>
-          <Text style={styles.exportButtonText}>Export Report</Text>
+          <Text style={styles.exportButtonText}
+            onPress={() => {
+              alert("Report exported successfully!");
+            }}
+          >Export Report</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

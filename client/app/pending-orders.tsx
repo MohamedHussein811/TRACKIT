@@ -13,10 +13,12 @@ import OrderCard from "@/components/OrderCard"; // Fixed import statement
 import { ArrowLeft, ShoppingCart, X } from "lucide-react-native";
 import api from "@/utils/apiClient";
 import AppBar from "@/components/AppBar";
+import { useAuthStore } from "@/store/auth-store";
 
 // HIGHLIGHT: New screen for pending orders
 export default function PendingOrdersScreen() {
   const router = useRouter();
+  const {user} = useAuthStore();
 
   const [pendingOrders, setPendingOrders] = React.useState([]);
 
@@ -28,7 +30,7 @@ export default function PendingOrdersScreen() {
 
         // Filter orders to only include those with status 'pending'
         const filteredOrders = response.data.orders.filter(
-          (order) => order.status === "pending"
+          (order) => order.status === "pending" && order.userName === user.name
         );
         console.log("Pending Orders:", filteredOrders);
         setPendingOrders(filteredOrders);

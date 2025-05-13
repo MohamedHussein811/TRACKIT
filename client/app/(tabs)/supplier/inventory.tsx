@@ -200,10 +200,6 @@ export default function InventoryScreen() {
           <TouchableOpacity style={styles.actionButton} onPress={handleSort}>
             <ArrowUpDown size={20} color={Colors.neutral.gray} />
           </TouchableOpacity>
-
-          <TouchableOpacity style={styles.actionButton} onPress={handleFilter}>
-            <Filter size={20} color={Colors.neutral.gray} />
-          </TouchableOpacity>
         </View>
       </View>
 

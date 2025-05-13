@@ -1,5 +1,6 @@
 import express from "express";
 import Event from "../models/Events.js";
+import Reservation from "../models/Reservation.js"; // Assuming you have a Reservation model
 const router = express.Router();
 
 // Create an event
@@ -53,9 +54,33 @@ router.delete("/events/:id", async (req, res) => {
   try {
     const deleted = await Event.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ message: "Event not found" });
+    const deletedReservations = await Reservation.deleteMany({
+      eventId: req.params.id,
+    });
+    if (deletedReservations.deletedCount > 0) {
+      console.log(
+        `Deleted ${deletedReservations.deletedCount} reservations for event ${req.params.id}`
+      );
+    }
     res.status(200).json({ message: "Event deleted" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete event", error });
+  }
+});
+
+router.delete("/events", async (req, res) => {
+  try {
+    const deleted = await Event.deleteMany();
+    if (!deleted) return res.status(404).json({ message: "No events found" });
+    const deletedReservations = await Reservation.deleteMany();
+    if (deletedReservations.deletedCount > 0) {
+      console.log(
+        `Deleted ${deletedReservations.deletedCount} reservations for all events`
+      );
+    }
+    res.status(200).json({ message: "All events deleted" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete events", error });
   }
 });
 

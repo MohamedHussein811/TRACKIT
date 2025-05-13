@@ -64,17 +64,6 @@ export default function TabLayoutOragnizer() {
       )}
 
       {}
-      {userType === "business" && (
-        <Tabs.Screen
-          name="shipment-tracking"
-          options={{
-            title: "Supply Chain",
-            tabBarIcon: ({ color }) => <Truck size={24} color={color} />,
-          }}
-        />
-      )}
-
-      {}
       {(userType === "business" || userType === "organizer") && (
         <Tabs.Screen
           name="events"
@@ -91,6 +80,14 @@ export default function TabLayoutOragnizer() {
         options={{
           title: "Profile",
           tabBarIcon: ({ color }) => <User size={24} color={color} />,
+        }}
+      />
+            {}
+      <Tabs.Screen
+        name="supply-chain"
+        options={{
+          title: "Supply Chain",
+          tabBarIcon: ({ color }) => <Truck size={24} color={color} />,
         }}
       />
     </Tabs>

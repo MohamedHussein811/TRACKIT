@@ -24,6 +24,7 @@ import {
 } from "lucide-react-native";
 import api from "@/utils/apiClient";
 import { useAuthStore } from "@/store/auth-store";
+import AppBar from "@/components/AppBar";
 
 export default function EventPaymentScreen() {
   const { id, title, price, date, time } = useLocalSearchParams();
@@ -234,19 +235,12 @@ export default function EventPaymentScreen() {
           ),
         }}
       />
+      <AppBar title="Event Registration"  isCanGoBack/>
 
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
       >
-        <TouchableOpacity
-          style={styles.backIconButton}
-          onPress={() => router.back()}
-        >
-          <View style={styles.iconBackground}>
-            <ArrowLeft size={20} color={Colors.neutral.black} />
-          </View>
-        </TouchableOpacity>
         <View style={styles.eventSummary}>
           <Text style={styles.eventTitle}>{title}</Text>
 
@@ -272,7 +266,7 @@ export default function EventPaymentScreen() {
 
           <View style={styles.priceSummary}>
             <Text style={styles.priceLabel}>Registration Fee</Text>
-            <Text style={styles.priceValue}>${formatPrice(price)}</Text>
+            <Text style={styles.priceValue}>EGP {formatPrice(price)}</Text>
           </View>
         </View>
 

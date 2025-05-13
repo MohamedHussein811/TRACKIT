@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, CreditCard, Plus, Check, Trash2 } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 // Mock payment methods
 const mockPaymentMethods = [
@@ -70,6 +71,8 @@ export default function PaymentMethodsScreen() {
           ),
         }} 
       />
+
+      <AppBar title='Payment Methods' isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Text style={styles.sectionTitle}>Your Payment Methods</Text>

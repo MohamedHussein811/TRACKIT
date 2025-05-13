@@ -194,6 +194,16 @@ export default function SupplierDashboardScreen() {
           </>
         )}
 
+        {item.status === "shipped" && (
+          <TouchableOpacity
+            style={[styles.actionButton, styles.shipButton]}
+            onPress={() => handleStatusPress("delivered", item._id)}
+          >
+            <Text style={styles.actionButtonText}>Mark as Delivered</Text>
+          </TouchableOpacity>
+        )}
+        
+
         {item.status === "processing" && (
           <TouchableOpacity
             style={[styles.actionButton, styles.shipButton]}

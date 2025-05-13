@@ -3,6 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from "react-na
 import { MaterialIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { LogBox } from "react-native";
+LogBox.ignoreAllLogs();
 
 interface AppBarProps {
     title: string;

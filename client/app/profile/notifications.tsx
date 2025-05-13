@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, Bell, ShoppingCart, Truck, AlertTriangle, Tag, Calendar, Mail } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 export default function NotificationsScreen() {
   const router = useRouter();
@@ -43,6 +44,8 @@ export default function NotificationsScreen() {
           ),
         }} 
       />
+
+      <AppBar title='Notifications' isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>

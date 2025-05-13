@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, Search, HelpCircle, MessageCircle, Phone, Mail, ChevronRight, ChevronDown } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 // Mock FAQs
 const mockFaqs = [
@@ -86,6 +87,7 @@ export default function HelpCenterScreen() {
           ),
         }} 
       />
+      <AppBar title="Help Center" isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.searchContainer}>

@@ -5,6 +5,7 @@ import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/store/auth-store';
 import { ArrowLeft, User, Mail as MailIcon, Building, Camera } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 export default function PersonalInformationScreen() {
   const router = useRouter();
@@ -48,6 +49,8 @@ export default function PersonalInformationScreen() {
           ),
         }} 
       />
+
+      <AppBar title='Personal Information' isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.photoSection}>

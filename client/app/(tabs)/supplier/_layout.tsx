@@ -32,7 +32,7 @@ export default function TabLayoutOragnizer() {
     <Tabs
     >
       {}
-      {(userType === "business" || userType === "organizer") && (
+      {(userType === "supplier" || userType === "organizer") && (
         <Tabs.Screen
           name="index"
           options={{

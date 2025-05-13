@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, Lock, Eye, EyeOff, Fingerprint, ShieldCheck, AlertTriangle } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 export default function SecurityScreen() {
   const router = useRouter();
@@ -77,6 +78,8 @@ export default function SecurityScreen() {
           ),
         }} 
       />
+
+      <AppBar title='Security' isCanGoBack/>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>

@@ -73,32 +73,6 @@ export default function NewOrderScreen() {
       )
     : [];
 
-  const handleSubmitProduct = () => {
-    console.log("Buying products:", selectedProducts);
-    // Submit logic here
-    const orderData = {
-      supplierId: selectedSupplier?._id,
-      items: selectedProducts.map((item) => ({
-        productId: item._id,
-        quantity: item.quantity,
-        unitPrice: item.price,
-      })),
-      totalAmount: totalAmount,
-      status: "pending",
-      createdAt: new Date().toISOString(),
-      userName: user?.name,
-    };
-    api
-      .post("/order", orderData)
-      .then((response) => {
-        console.log("Order created successfully:", response.data);
-        router.back();
-      })
-      .catch((error) => {
-        console.error("Error creating order:", error);
-      });
-  };
-
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Select a Supplier</Text>

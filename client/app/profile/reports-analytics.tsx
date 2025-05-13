@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
 import { ArrowLeft, BarChart, LineChart, PieChart, Download, Calendar, Filter } from 'lucide-react-native';
+import AppBar from '@/components/AppBar';
 
 // Mock data for charts
 const mockSalesData = [
@@ -38,6 +39,8 @@ export default function ReportsAnalyticsScreen() {
   };
 
   return (
+    <>
+    <AppBar title="Reports & Analytics"  isCanGoBack/>
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen 
         options={{
@@ -177,6 +180,7 @@ export default function ReportsAnalyticsScreen() {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    </>
   );
 }
 

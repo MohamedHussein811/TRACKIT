@@ -33,7 +33,7 @@ export default function LowStockItemsScreen() {
       try {
         const response = await api.get("/products");
         const filteredProducts = response.data.filter(
-          (product: Product) => product.quantity === product.minStockLevel
+          (product: Product) => product.quantity <= product.minStockLevel
         );
         setLowStockProducts(filteredProducts);
       } catch (error) {

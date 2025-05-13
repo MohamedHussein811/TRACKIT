@@ -24,6 +24,7 @@ import ProductCard from "@/components/ProductCard";
 import { Product } from "@/types";
 import { useAuthStore } from "@/store/auth-store";
 import api from "@/utils/apiClient";
+import AppBar from "@/components/AppBar";
 
 export default function InventoryScreen() {
   const router = useRouter();
@@ -167,9 +168,6 @@ export default function InventoryScreen() {
             <ArrowUpDown size={20} color={Colors.neutral.gray} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.actionButton} onPress={handleFilter}>
-            <Filter size={20} color={Colors.neutral.gray} />
-          </TouchableOpacity>
         </View>
       </View>
 

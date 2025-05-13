@@ -3,6 +3,7 @@ import { Text, View, StyleSheet, Alert } from "react-native";
 import { Camera, CameraView, BarcodeScanningResult } from "expo-camera";
 import api from "@/utils/apiClient";
 import { useAuthStore } from "@/store/auth-store";
+import AppBar from "@/components/AppBar";
 
 const QRcodeScannerScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
@@ -70,6 +71,8 @@ const QRcodeScannerScreen = () => {
   }
 
   return (
+    <>
+    <AppBar title="QR Code Scanner" isCanGoBack={true} />
     <View style={styles.container}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
@@ -92,6 +95,7 @@ const QRcodeScannerScreen = () => {
         </View>
       </CameraView>
     </View>
+    </>
   );
 };
 

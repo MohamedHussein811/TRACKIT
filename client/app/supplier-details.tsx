@@ -41,7 +41,7 @@ export default function SupplierDetailsScreen() {
   }, [supplierId]);
 
   const supplier = suppliers.find(s => s._id === supplierId);
-  const supplierProducts = products.filter(p => p.supplierId === supplierId);
+  const supplierProducts = products.filter(p => p.ownerId === supplierId);
 
   if (loading) {
     return (

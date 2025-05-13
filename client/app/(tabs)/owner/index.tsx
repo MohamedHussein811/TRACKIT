@@ -40,6 +40,7 @@ export default function DashboardScreen() {
     totalProducts: 0,
     lowStockItems: 0,
     pendingOrders: 0,
+    myreservedEvents: 0,
 
     upcomingEvents: 0,
     recentSales: {
@@ -135,6 +136,10 @@ export default function DashboardScreen() {
       case "salesReport":
         router.push("/sales-report");
         break;
+      case "supply-chain":
+        router.push("/(tabs)/owner/supply-chain");
+
+        break;
       default:
         break;
     }
@@ -142,7 +147,7 @@ export default function DashboardScreen() {
 
   // Navigation handlers for dashboard cards
   const handleTotalProducts = () => {
-    router.push("/total-products");
+    router.push("/(tabs)/owner/inventory");
   };
 
   const handleLowStockItems = () => {
@@ -154,7 +159,7 @@ export default function DashboardScreen() {
   };
 
   const handleUpcomingEvents = () => {
-    router.push("/(tabs)/events");
+    router.push("/(tabs)/owner/events");
   };
 
   const formatDate = (dateString: string) => {
@@ -207,7 +212,7 @@ export default function DashboardScreen() {
           />
           <StatusCard
             title="Upcoming Events"
-            value={dashboardStats.upcomingEvents.toString()}
+            value={dashboardStats.myreservedEvents.toString()}
             icon={<Calendar size={24} color={Colors.status.success} />}
             color={Colors.status.success}
             onPress={handleUpcomingEvents}
@@ -367,9 +372,9 @@ export default function DashboardScreen() {
               <Text style={styles.quickActionText}>Add Product</Text>
             </TouchableOpacity>
 
-                        <TouchableOpacity
+            <TouchableOpacity
               style={styles.quickActionButton}
-              onPress={() => handleQuickAction("newOrder")}
+              onPress={() => handleQuickAction("supply-chain")}
             >
               <View
                 style={[

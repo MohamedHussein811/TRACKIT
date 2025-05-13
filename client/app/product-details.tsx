@@ -158,16 +158,52 @@ export default function ProductDetailsScreen() {
       return;
     }
 
-    console.log(product.supplier);
+    Alert.alert(
+      "Confirm Order",
+      `Are you sure you want to order ${quantity} unit(s) of ${product.name}?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Order",
+          onPress: async () => {
+            setIsLoading(true);
+            try {
+              const orderData = {
+                supplierId: product.ownerId._id,
+                items: [
+                  {
+                    productId: product._id,
+                    quantity,
+                    unitPrice: product.price,
+                  },
+                ],
+                totalAmount: (quantity * product.price).toFixed(2),
+                status: "pending",
+                createdAt: new Date().toISOString(),
+                userName: user?.name,
+              };
 
-    // Navigate to new order screen with this product pre-selected
-    router.push({
-      pathname: "/new-order",
-      params: {
-        supplierId: product?.supplierId?._id || "",
-        productId: product._id,
-      },
-    });
+              const response = await api.post("/order", orderData);
+              if (response.status === 201) {
+                Alert.alert("Success", "Order placed successfully", [
+                  { text: "OK", onPress: () => router.back() },
+                ]);
+              } else {
+                Alert.alert(
+                  "Error",
+                  "Failed to place order. Please try again."
+                );
+              }
+            } catch (error) {
+              console.error("Error creating order:", error);
+              Alert.alert("Error", "Failed to place order. Please try again.");
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+      ]
+    );
   };
 
   const handleIncreaseQuantity = () => {
@@ -219,7 +255,7 @@ export default function ProductDetailsScreen() {
           ),
         }}
       />
-<AppBar title="Product Details" isCanGoBack={true} />
+      <AppBar title="Product Details" isCanGoBack={true} />
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
@@ -288,7 +324,12 @@ export default function ProductDetailsScreen() {
                 <Package size={20} color={Colors.primary.burgundy} />
               </View>
               <Text style={styles.detailLabel}>SKU</Text>
-              <Text style={styles.detailValue}>{product.sku}</Text>
+              <Image
+                source={{ uri: product.sku }}
+                style={styles.barcodeContainer}
+                resizeMode="contain"
+              />
+
             </View>
 
             <View style={styles.detailItem}>
@@ -297,7 +338,7 @@ export default function ProductDetailsScreen() {
               </View>
               <Text style={styles.detailLabel}>Cost</Text>
               <Text style={styles.detailValue}>
-                ${(product.cost || 0).toFixed(2)}
+                ${(product.price || 0).toFixed(2)}
               </Text>
             </View>
 
@@ -315,20 +356,10 @@ export default function ProductDetailsScreen() {
               </View>
               <Text style={styles.detailLabel}>Supplier</Text>
               <Text style={styles.detailValue}>
-                {product.supplierId?.name || product.supplierId?.email || "N/A"}
+                {product.ownerId?.name || product.ownerId?.email || "N/A"}
               </Text>
             </View>
           </View>
-
-          {product.barcode && (
-            <>
-              <View style={styles.divider} />
-              <Text style={styles.sectionTitle}>Barcode</Text>
-              <View style={styles.barcodeContainer}>
-                <Text style={styles.barcodeText}>{product.barcode}</Text>
-              </View>
-            </>
-          )}
         </View>
       </ScrollView>
 

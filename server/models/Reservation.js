@@ -1,5 +1,6 @@
 // models/Reservation.js
 import mongoose from "mongoose";
+import { model } from "mongoose";
 
 const reservationSchema = new mongoose.Schema(
   {
@@ -29,8 +30,7 @@ const reservationSchema = new mongoose.Schema(
   }
 );
 
-const Reservation =
-  mongoose.models.Reservation ||
-  mongoose.model("Reservation", reservationSchema);
+
+const Reservation = model("Reservation", reservationSchema);
 
 export default Reservation;
