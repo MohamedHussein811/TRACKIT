@@ -73,29 +73,49 @@ export const changeOrderStatus = async (req, res) => {
     // Update the order status
     order.status = status;
 
-    // inside the items array, update the quantity of each product
+    // Process based on order status
     for (const item of order.items) {
       const product = await Product.findById(item.productId);
 
       if (product) {
-        if(status === 'shipped') {
-          // Decrease the product quantity
-        //  product.quantity -= item.quantity;
-        }
-        else if(status === 'cancelled') {
-          // Increase the product quantity
+        if (status === 'delivered') {
+          // Find the customer (owner of the order)
+          const customer = await User.findOne({ name: order.ownerName });
+          
+          if (customer) {
+            // Create a copy of the product for the customer
+            const newProduct = new Product({
+              name: product.name,
+              sku: product.sku,
+              image: product.image,
+              description: product.description,
+              category: product.category,
+              price: product.price,
+              quantity: item.quantity, // Set quantity to what they ordered
+              minStockLevel: product.minStockLevel,
+              ownerId: customer._id // Set the customer as the owner
+            });
+            
+            // Save the new product
+            await newProduct.save();
+            
+            // Increment the productsCount for the customer
+            customer.productsCount = (customer.productsCount || 0) + 1;
+            await customer.save();
+          }
+        } else if (status === 'cancelled') {
+          // Increase the product quantity if order is cancelled
           product.quantity += item.quantity;
+          await product.save();
         }
-        // Save the updated product
-        await product.save();
       }
     }
 
-
     // Save the updated order
     await order.save();
-        res.status(200).json({ message: "Order status updated successfully" });
+    res.status(200).json({ message: "Order status updated successfully" });
   } catch (error) {
+    console.error("Error updating order status:", error);
     res.status(500).json({ message: error.message });
   }
 };
