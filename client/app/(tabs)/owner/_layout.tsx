@@ -73,6 +73,14 @@ export default function TabLayoutOragnizer() {
           }}
         />
       )}
+     {}
+      <Tabs.Screen
+        name="supply-chain"
+        options={{
+          title: "Supply Chain",
+          tabBarIcon: ({ color }) => <Truck size={24} color={color} />,
+        }}
+      />
 
       {}
       <Tabs.Screen
@@ -82,14 +90,7 @@ export default function TabLayoutOragnizer() {
           tabBarIcon: ({ color }) => <User size={24} color={color} />,
         }}
       />
-            {}
-      <Tabs.Screen
-        name="supply-chain"
-        options={{
-          title: "Supply Chain",
-          tabBarIcon: ({ color }) => <Truck size={24} color={color} />,
-        }}
-      />
+            
     </Tabs>
   );
 }
