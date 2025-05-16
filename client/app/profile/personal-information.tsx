@@ -1,22 +1,27 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Stack, useRouter } from 'expo-router';
+import AppBar from '@/components/AppBar';
+import DefaultAvatar from '@/components/DefaultAvatar';
 import Colors from '@/constants/colors';
 import { useAuthStore } from '@/store/auth-store';
-import { ArrowLeft, User, Mail as MailIcon, Building, Camera } from 'lucide-react-native';
-import AppBar from '@/components/AppBar';
+import api from '@/utils/apiClient';
+import * as ImagePicker from 'expo-image-picker';
+import { Stack, useRouter } from 'expo-router';
+import { ArrowLeft, Building, Camera, Mail as MailIcon, User, X } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, Alert, Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function PersonalInformationScreen() {
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, updateUser } = useAuthStore();
+  const [isSaving, setIsSaving] = useState(false);
+  const [profileImage, setProfileImage] = useState<string | null>(user?.avatar || null);
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
     businessName: user?.businessName || '',
-    phone: '555-123-4567', // Mock data
-    address: '123 Business St, New York, NY 10001', // Mock data
+    phone: user?.phone || '',
+    address: user?.address || '',
   });
 
   const handleInputChange = (field: string, value: string) => {
@@ -26,15 +31,101 @@ export default function PersonalInformationScreen() {
     });
   };
 
-  const handleSave = () => {
-    // In a real app, you would update the user profile here
-    // For now, just go back
-    router.back();
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfileImage(result.assets[0].uri);
+    }
   };
 
-  const handleChangePhoto = () => {
-    // In a real app, you would implement image picking functionality
-    alert('Change photo functionality would be implemented here');
+  const uploadImage = async (uri: string) => {
+    const formData = new FormData();
+    
+    if (!uri) {
+      Alert.alert("Error", "Image URI is missing.");
+      return null;
+    }
+
+    const imageUri = uri.startsWith("file://") ? uri : `file://${uri}`;
+
+    const imageFile = {
+      uri: imageUri,
+      type: "image/jpeg",
+      name: "profile_image.jpg",
+    };
+
+    formData.append("file", imageFile as any);
+    formData.append("preset", "neena-bot");
+
+    try {
+      const imageResponse = await fetch(
+        "https://api-novatech.vercel.app/upload-file",
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      if (!imageResponse.ok) {
+        const errorData = await imageResponse.json();
+        console.error("Image upload error:", errorData);
+        Alert.alert("Error", "Failed to upload profile image");
+        return null;
+      }
+
+      const imageData = await imageResponse.json();
+      return imageData.secure_url;
+    } catch (error) {
+      console.error("Image upload exception:", error);
+      Alert.alert("Error", "An error occurred while uploading the image");
+      return null;
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      let avatarUrl = user?.avatar;
+
+      if (profileImage && profileImage !== user?.avatar) {
+        avatarUrl = await uploadImage(profileImage);
+        if (!avatarUrl) {
+          setIsSaving(false);
+          return;
+        }
+      }
+
+      const response = await api.put("/updateuser", {
+        ...formData,
+        avatar: avatarUrl,
+      });
+
+      if (response.status === 200) {
+        updateUser({
+          ...user,
+          ...formData,
+          avatar: avatarUrl,
+        });
+        Alert.alert("Success", "Profile updated successfully");
+        router.back();
+      } else {
+        Alert.alert("Error", "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Profile update error:", error);
+      Alert.alert("Error", "An error occurred while updating the profile");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -55,11 +146,23 @@ export default function PersonalInformationScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.photoSection}>
           <View style={styles.photoContainer}>
-            <Image 
-              source={{ uri: user?.avatar || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e' }} 
-              style={styles.profileImage} 
-            />
-            <TouchableOpacity style={styles.cameraButton} onPress={handleChangePhoto}>
+            {profileImage ? (
+              <>
+                <Image 
+                  source={{ uri: profileImage }} 
+                  style={styles.profileImage} 
+                />
+                <TouchableOpacity 
+                  style={styles.removeImageButton}
+                  onPress={() => setProfileImage(null)}
+                >
+                  <X size={20} color={Colors.neutral.white} />
+                </TouchableOpacity>
+              </>
+            ) : (
+              <DefaultAvatar size={100} />
+            )}
+            <TouchableOpacity style={styles.cameraButton} onPress={pickImage}>
               <Camera size={20} color={Colors.neutral.white} />
             </TouchableOpacity>
           </View>
@@ -140,8 +243,16 @@ export default function PersonalInformationScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]} 
+          onPress={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <ActivityIndicator color={Colors.neutral.white} />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Changes</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -170,6 +281,14 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 50,
   },
+  imagePlaceholder: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: Colors.neutral.extraLightGray,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   cameraButton: {
     position: 'absolute',
     bottom: 0,
@@ -182,6 +301,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 2,
     borderColor: Colors.neutral.white,
+  },
+  removeImageButton: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    borderRadius: 20,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   changePhotoText: {
     fontSize: 14,
@@ -234,6 +364,9 @@ const styles = StyleSheet.create({
     height: 56,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
   saveButtonText: {
     color: Colors.neutral.white,

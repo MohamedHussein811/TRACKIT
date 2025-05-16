@@ -1,12 +1,12 @@
+import Event from "../../models/Events.js";
 import Order from "../../models/Orders.js";
 import Product from '../../models/Products.js';
-import Event from "../../models/Events.js";
-import User from "../../models/Users.js";
 import Reservation from "../../models/Reservation.js";
+import User from "../../models/Users.js";
 export const allOrders = async (req, res) => {
   try {
     // Fetch all orders from the database, optionally you can sort or paginate
-    const orders = await Order.find().populate('supplierId').populate('items.productId').exec();
+    const orders = await Order.find().populate('ownerId').populate('items.productId').exec();
 
     // If no orders are found
     if (orders.length === 0) {

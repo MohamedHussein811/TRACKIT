@@ -1,35 +1,39 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Alert, FlatList, ActivityIndicator } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Colors from '@/constants/colors';
-import { ArrowLeft, Star, Phone, Mail, MapPin, ShoppingCart, Package, Tag } from 'lucide-react-native';
-import { useAuthStore } from '@/store/auth-store';
+import AppBar from '@/components/AppBar';
 import ProductCard from '@/components/ProductCard';
+import Colors from '@/constants/colors';
+import { useAuthStore } from '@/store/auth-store';
 import { Product, User } from '@/types';
 import api from '@/utils/apiClient';
-import AppBar from '@/components/AppBar';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Mail, MapPin, Package, Phone, Star, Tag } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Alert, FlatList, Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SupplierDetailsScreen() {
   const { id } = useLocalSearchParams();
-  const supplierId = typeof id === 'string' ? id : undefined;
+  const ownerId = typeof id === 'string' ? id : undefined;
   const router = useRouter();
   const { hasPermission } = useAuthStore();
+  const { user } = useAuthStore();
   
   const [suppliers, setSuppliers] = useState<User[]>([]);
-  const [products, setProducts] = useState<Product[]>([]); // Replace with actual product type
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!supplierId) return;
+    if (!ownerId) return;
 
     const fetchSuppliers = async () => {
       try {
         const res = await api.get('/suppliers');
-        const pro = await api.get('/products');
+        const pro = await api.get(`/products/owner/${ownerId}`);
         setSuppliers(res.data);
         setProducts(pro.data);
-
+        console.log('suppliers:', JSON.stringify(res.data, null, 2));
+        console.log('products:', JSON.stringify(pro.data, null, 2));
+        console.log('ownerId:', ownerId);
+        console.log('user:', JSON.stringify(user, null, 2));
       } catch (err) {
         console.error('Failed to fetch suppliers:', err);
       } finally {
@@ -38,10 +42,10 @@ export default function SupplierDetailsScreen() {
     };
 
     fetchSuppliers();
-  }, [supplierId]);
+  }, [ownerId]);
 
-  const supplier = suppliers.find(s => s._id === supplierId);
-  const supplierProducts = products.filter(p => p.ownerId === supplierId);
+  const supplier = suppliers.find(s => s._id === ownerId);
+  const supplierProducts = products;
 
   if (loading) {
     return (
@@ -115,7 +119,7 @@ export default function SupplierDetailsScreen() {
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <Image
-          source={{ uri: supplier.image || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }}
+          source={{ uri: supplier?.avatar || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }}
           style={styles.supplierImage}
           resizeMode="cover"
         />

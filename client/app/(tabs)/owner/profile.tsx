@@ -1,30 +1,30 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import Colors from "@/constants/colors";
 import { useAuthStore } from "@/store/auth-store";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-  User,
-  Settings,
   Bell,
+  ChevronRight,
   CreditCard,
+  FileText,
   HelpCircle,
   LogOut,
-  ChevronRight,
+  Settings,
   ShieldCheck,
-  Truck,
-  FileText,
   Trash,
+  Truck,
+  User,
 } from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const { user, logout,deleteAccount } = useAuthStore();

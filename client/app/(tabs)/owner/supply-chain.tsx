@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import Colors from '@/constants/colors';
-import { Order, User } from '@/types';
-import { Star, Phone, Mail, Package, Truck, ShoppingCart } from 'lucide-react-native';
 import { useAuthStore } from '@/store/auth-store';
+import { Order, User } from '@/types';
 import api from '@/utils/apiClient';
+import { useRouter } from 'expo-router';
+import { Mail, Package, Phone, ShoppingCart, Star, Truck } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SupplyChainScreen() {
   const router = useRouter();
@@ -34,6 +34,7 @@ export default function SupplyChainScreen() {
   
   const handleSupplierPress = (supplier: User) => {
     // Navigate to supplier details
+    console.log('Navigating to supplier details with ID:', supplier._id);
     router.push({
       pathname: '/supplier-details',
       params: { id: supplier._id }
@@ -41,19 +42,11 @@ export default function SupplyChainScreen() {
   };
 
   const handleOrderPress = (order: Order) => {
-    // HIGHLIGHT: Navigate to shipment tracking screen
-    if (order.status !== 'pending') {
-      router.push({
-        pathname: '/shipment-tracking',
-        params: { id: order._id }
-      });
-    } else {
-      // For pending orders, we might show a different screen or message
-      router.push({
-        pathname: '/order-details',
-        params: { id: order._id }
-      });
-    }
+    //! HIGHLIGHT: Navigate to shipment tracking screen
+    router.push({
+      pathname: '/order-details',
+      params: { id: order._id }
+    });
   };
 
   const handlePlaceOrder = (supplier: User) => {
@@ -65,7 +58,7 @@ export default function SupplyChainScreen() {
     // Navigate to place order screen
     router.push({
       pathname: '/new-order',
-      params: { supplierId: supplier._id }
+      params: { ownerId: supplier._id }
     });
   };
 
@@ -149,12 +142,6 @@ export default function SupplyChainScreen() {
           >
             <Mail size={16} color={Colors.primary.burgundy} />
           </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.contactButton, styles.orderButton]}
-            onPress={() => handlePlaceOrder(item)}
-          >
-            <Text style={styles.orderButtonText}>Order</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>
@@ -217,7 +204,7 @@ export default function SupplyChainScreen() {
         </View>
         
         <View style={styles.orderDetails}>
-          <Text style={styles.supplierName}>{item.supplierId?.name || item.supplierId?.email || "Supplier"}</Text>
+          <Text style={styles.supplierName}>{item.ownerId?.name || item.ownerId?.email || "Owner"}</Text>
           <Text style={styles.orderDate}>{formatDate(item.createdAt)}</Text>
         </View>
         
@@ -235,28 +222,7 @@ export default function SupplyChainScreen() {
         </View>
         
         {/* HIGHLIGHT: Added tracking info for shipped/delivered orders */}
-        {(item.status === 'shipped' || item.status === 'delivered') && (
-          <View style={styles.trackingInfo}>
-            <View style={styles.trackingHeader}>
-              <Truck size={16} color={Colors.primary.burgundy} />
-              <Text style={styles.trackingTitle}>Shipment Tracking</Text>
-            </View>
-            {item.trackingNumber && (
-              <Text style={styles.trackingNumber}>Tracking #: {item.trackingNumber}</Text>
-            )}
-            {item.expectedDelivery && (
-              <Text style={styles.deliveryDate}>
-                Expected delivery: {formatDate(item.expectedDelivery)}
-              </Text>
-            )}
-            <TouchableOpacity 
-              style={styles.trackButton}
-              onPress={() => handleOrderPress(item)}
-            >
-              <Text style={styles.trackButtonText}>Track Shipment</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        
       </TouchableOpacity>
     );
   };

@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
-import { ArrowLeft, User, Building, MapPin, Phone, Mail, ChevronRight } from 'lucide-react-native';
 import { suppliers } from '@/mocks/suppliers';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Building, ChevronRight, Mail, MapPin, Phone, User } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrderInformationScreen() {
-  const { supplierId } = useLocalSearchParams();
+  const { ownerId } = useLocalSearchParams();
   const router = useRouter();
-  const supplier = suppliers.find(s => s.id === supplierId);
+  const owner = suppliers.find(s => s.id === ownerId);
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -78,14 +78,14 @@ export default function OrderInformationScreen() {
   const handleContinue = () => {
     if (validateForm()) {
       // Navigate to payment screen
-      router.push(`/order-payment?supplierId=${supplierId}&fromInfo=true`);
+      router.push(`/order-payment?ownerId=${ownerId}&fromInfo=true`);
     } else {
       // Scroll to the first error
       Alert.alert('Please fill in all required fields correctly');
     }
   };
 
-  if (!supplier) {
+  if (!owner) {
     return (
       <SafeAreaView style={styles.container}>
         <Stack.Screen 
@@ -132,7 +132,7 @@ export default function OrderInformationScreen() {
           <View style={styles.header}>
             <Text style={styles.title}>Your Information</Text>
             <Text style={styles.subtitle}>
-              Please provide your contact and shipping information to place an order with {supplier.name}
+              Please provide your contact and shipping information to place an order with {owner.name}
             </Text>
           </View>
 

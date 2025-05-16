@@ -1,27 +1,28 @@
+import AppBar from "@/components/AppBar";
+import Colors from "@/constants/colors";
+import { fetchSuppliers } from "@/mocks/suppliers";
+import { useAuthStore } from "@/store/auth-store";
+import { User } from "@/types";
+import api from "@/utils/apiClient";
+import * as ImagePicker from "expo-image-picker";
+import { Stack, useRouter } from "expo-router";
+import { Camera, ChevronDown, Plus, X } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
+  ActivityIndicator,
+  Alert,
+  Image,
+  Linking,
+  Platform,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Image,
-  Platform,
-  Alert,
+  View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Stack, useRouter } from "expo-router";
-import Colors from "@/constants/colors";
-import { Camera, X, Plus, ChevronDown, ArrowLeft } from "lucide-react-native";
-import * as ImagePicker from "expo-image-picker";
-import { useAuthStore } from "@/store/auth-store";
-import api from "@/utils/apiClient";
-import { fetchSuppliers } from "@/mocks/suppliers";
-import { User } from "@/types";
 import Modal from "react-native-modal";
-import { Linking } from "react-native";
-import AppBar from "@/components/AppBar";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function AddProductScreen() {
   const router = useRouter();
@@ -46,6 +47,7 @@ export default function AddProductScreen() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [generatedQRCode, setGeneratedQRCode] = useState<string>("");
   const [isQRModalVisible, setIsQRModalVisible] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   // Add this function near other handler functions
   // HIGHLIGHT: Changed to allow adding custom categories
@@ -133,6 +135,7 @@ export default function AddProductScreen() {
   
   const handleSave = async () => {
     // Validate form data
+    console.log("user", user);
     if (!formData.name) {
       Alert.alert("Error", "Product name is required");
       return;
@@ -142,6 +145,8 @@ export default function AddProductScreen() {
       Alert.alert("Error", "Product price is required");
       return;
     }
+
+    setIsSaving(true);
 
     // Create a proper FormData object for the image upload
     const imageFormData = new FormData();
@@ -176,13 +181,27 @@ export default function AddProductScreen() {
         );
 
         if (!imageResponse.ok) {
-          const errorData = await imageResponse.json();
-          console.error("Image upload error:", errorData);
+          console.error("Image upload error:", await imageResponse.text());
           Alert.alert("Error", "Failed to upload product image");
           return;
         }
 
-        const imageData = await imageResponse.json();
+        const responseText = await imageResponse.text();
+        let imageData;
+        try {
+          imageData = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error("Failed to parse image response:", responseText);
+          Alert.alert("Error", "Invalid response from image upload");
+          return;
+        }
+
+        if (!imageData.secure_url) {
+          console.error("No secure_url in response:", imageData);
+          Alert.alert("Error", "Invalid image upload response");
+          return;
+        }
+
         imageUrl = imageData.secure_url;
       } catch (error) {
         console.error("Image upload exception:", error);
@@ -198,6 +217,7 @@ export default function AddProductScreen() {
       quantity: parseInt(formData.quantity),
       minStockLevel: parseInt(formData.minStockLevel),
       image: imageUrl || formData.image,
+      // ownerId: user?._id,
     };
 
     // console.log("Sending product data:", productData);
@@ -216,6 +236,8 @@ export default function AddProductScreen() {
     } catch (error) {
       console.error("Product creation exception:", error);
       Alert.alert("Error", "An error occurred while saving the product");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -414,8 +436,16 @@ export default function AddProductScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Product</Text>
+        <TouchableOpacity 
+          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]} 
+          onPress={handleSave}
+          disabled={isSaving}
+        >
+          {isSaving ? (
+            <ActivityIndicator color={Colors.neutral.white} />
+          ) : (
+            <Text style={styles.saveButtonText}>Save Product</Text>
+          )}
         </TouchableOpacity>
       </View>
       <Modal
@@ -665,6 +695,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
+  },
+  saveButtonDisabled: {
+    opacity: 0.7,
   },
   saveButtonText: {
     color: Colors.neutral.white,

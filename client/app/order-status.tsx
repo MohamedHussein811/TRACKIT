@@ -1,17 +1,17 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Stack, useRouter, useLocalSearchParams } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Colors from '@/constants/colors';
-import { ArrowLeft, CheckCircle, Clock, Truck, Calendar, Package } from 'lucide-react-native';
 import { suppliers } from '@/mocks/suppliers';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { ArrowLeft, Calendar, CheckCircle, Clock, Package, Truck } from 'lucide-react-native';
+import React, { useState } from 'react';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function OrderStatusScreen() {
   const router = useRouter();
-  const { supplierId, orderId } = useLocalSearchParams();
-  
-  // Find supplier
-  const supplier = suppliers.find(s => s.id === supplierId);
+  const { ownerId, orderId } = useLocalSearchParams();
+  const [order, setOrder] = useState<Order | null>(null);
+  const [loading, setLoading] = useState(true);
+  const owner = suppliers.find(s => s.id === ownerId);
   
   // Mock order data
   const orderData = {
@@ -42,10 +42,10 @@ export default function OrderStatusScreen() {
   };
 
   const handleContactSupplier = () => {
-    if (!supplier) return;
+    if (!owner) return;
     
     // Navigate back to supplier details
-    router.push(`/supplier-details?id=${supplierId}`);
+    router.push(`/supplier-details?id=${ownerId}`);
   };
 
   return (
@@ -156,19 +156,19 @@ export default function OrderStatusScreen() {
           </View>
         </View>
         
-        {supplier && (
+        {owner && (
           <View style={styles.supplierCard}>
             <Text style={styles.supplierTitle}>Supplier Information</Text>
             
             <View style={styles.supplierInfo}>
               <Image 
-                source={{ uri: supplier.image || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }} 
+                source={{ uri: owner.image || 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0' }} 
                 style={styles.supplierImage} 
               />
               <View style={styles.supplierDetails}>
-                <Text style={styles.supplierName}>{supplier.name}</Text>
-                <Text style={styles.supplierContact}>{supplier.phone}</Text>
-                <Text style={styles.supplierContact}>{supplier.email}</Text>
+                <Text style={styles.supplierName}>{owner.name}</Text>
+                <Text style={styles.supplierContact}>{owner.phone}</Text>
+                <Text style={styles.supplierContact}>{owner.email}</Text>
               </View>
             </View>
           </View>

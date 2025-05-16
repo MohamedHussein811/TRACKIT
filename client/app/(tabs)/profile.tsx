@@ -1,30 +1,31 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  ScrollView,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import DefaultAvatar from "@/components/DefaultAvatar";
 import Colors from "@/constants/colors";
 import { useAuthStore } from "@/store/auth-store";
+import { LinearGradient } from "expo-linear-gradient";
 import { useRouter } from "expo-router";
 import {
-  User,
-  Settings,
-  Bell,
-  CreditCard,
-  HelpCircle,
-  LogOut,
-  ChevronRight,
-  ShieldCheck,
-  Truck,
-  FileText,
-  Trash,
+    Bell,
+    ChevronRight,
+    CreditCard,
+    FileText,
+    HelpCircle,
+    LogOut,
+    Settings,
+    ShieldCheck,
+    Trash,
+    Truck,
+    User,
 } from "lucide-react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import {
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -103,14 +104,14 @@ export default function ProfileScreen() {
             end={{ x: 1, y: 1 }}
           >
             <View style={styles.profileInfo}>
-              <Image
-                source={{
-                  uri:
-                    user?.avatar ||
-                    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e",
-                }}
-                style={styles.profileImage}
-              />
+              {user?.avatar ? (
+                <Image
+                  source={{ uri: user.avatar }}
+                  style={styles.profileImage}
+                />
+              ) : (
+                <DefaultAvatar size={80} />
+              )}
               <View style={styles.profileTextContainer}>
                 <Text style={styles.profileName}>{user?.name}</Text>
                 <Text style={styles.profileEmail}>{user?.email}</Text>

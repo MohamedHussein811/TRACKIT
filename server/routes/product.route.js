@@ -7,6 +7,7 @@ import {
   updateProduct,
   deleteProduct,
   featuredProducts,
+  getProductsByOwnerId,
 } from "../controllers/ProductController/product.controller.js";
 
 const router = Router();
@@ -16,7 +17,8 @@ router.get("/products", authenticateToken, getProducts);
 router.get("/products/:id", getProductById);
 router.put("/products/:id", authenticateToken, updateProduct);
 router.delete("/products/:id", authenticateToken, deleteProduct);
-
+router.get("/products/owner/:ownerId", getProductsByOwnerId);
 router.get('/featured-products', featuredProducts);
+
 
 export default router;

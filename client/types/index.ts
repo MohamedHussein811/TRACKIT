@@ -26,33 +26,14 @@ export interface Product {
   price: number;
   cost: number;
   quantity: number;
-  stock?: number; // Added stock property
+  stock?: number;
   lowStockThreshold?: number;
-  minStockLevel: number; // Added minStockLevel property
+  minStockLevel: number;
   sku: string;
   barcode?: string;
   image?: string;
   supplier?: string;
-  supplierId?: {
-    _id: string;
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    logo?: string;
-    image?: string; // Added image property
-    categories: string[];
-    rating: number;
-    productsCount: number;
-    ordersCount: number;
-    eventsCount: number;
-    subscriptions?: SubscriptionPlan[];
-    subscription?: SubscriptionPlan;
-    token?: string;
-    permissions?: string[];
-    createdAt: string;
-    updatedAt: string;
-  }; // Added supplierId property
+  ownerId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -72,9 +53,9 @@ export interface Supplier {
 
 export interface Order {
   _id: string;
-  supplierId: string;
-  supplierName: string;
-  businessName?: string; // Added businessName property
+  ownerId: string;
+  ownerName: string;
+  businessName?: string;
   status:
     | "pending"
     | "confirmed"
@@ -87,9 +68,9 @@ export interface Order {
   totalAmount: number;
   createdAt: string;
   updatedAt: string;
-  orderDate: string; // Added orderDate property
+  orderDate: string;
   estimatedDelivery?: string;
-  expectedDelivery?: string; // Added expectedDelivery property
+  expectedDelivery?: string;
   trackingNumber?: string;
 }
 

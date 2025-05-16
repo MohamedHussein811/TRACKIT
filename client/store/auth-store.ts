@@ -1,9 +1,9 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '@/types';
 import api from '@/utils/apiClient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert, Platform } from 'react-native';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 interface AuthState {
   user: User | null;
@@ -18,6 +18,7 @@ interface AuthState {
   hasPermission: (permission: string) => boolean;
   initAuth: () => Promise<void>;
   setToken: (token: string) => Promise<void>; // New helper function
+  updateUser: (userData: Partial<User>) => void;
 }
 
 // Define permissions for different user types
@@ -124,7 +125,7 @@ login: async (email: string, password: string) => {
     console.log('token', token);
     
     const user: User = {
-      _id: userData.id,
+      _id: userData._id,
       name: userData.name,
       email: userData.email,
       businessName: userData.businessName,
@@ -304,7 +305,19 @@ login: async (email: string, password: string) => {
         
         const userType = user.userType;
         return userPermissions[userType]?.includes(permission) || false;
-      }
+      },
+
+      updateUser: (userData: Partial<User>) => {
+        const currentUser = get().user;
+        if (currentUser) {
+          set({
+            user: {
+              ...currentUser,
+              ...userData,
+            },
+          });
+        }
+      },
     }),
     {
       name: 'auth-storage',

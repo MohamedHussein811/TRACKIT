@@ -1,31 +1,31 @@
+import AppBar from "@/components/AppBar";
+import Colors from "@/constants/colors";
+import { useAuthStore } from "@/store/auth-store";
+import { Product } from "@/types";
+import api from "@/utils/apiClient";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import {
+    AlertTriangle,
+    ArrowLeft,
+    BarChart3,
+    DollarSign,
+    Edit,
+    Package,
+    ShoppingCart,
+    Trash2,
+    Truck,
+} from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  Image,
-  TouchableOpacity,
-  Alert,
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Colors from "@/constants/colors";
-import {
-  ArrowLeft,
-  Edit,
-  Trash2,
-  ShoppingCart,
-  AlertTriangle,
-  Package,
-  Truck,
-  DollarSign,
-  BarChart3,
-} from "lucide-react-native";
-import { useAuthStore } from "@/store/auth-store";
-import api from "@/utils/apiClient";
-import { Product } from "@/types";
-import AppBar from "@/components/AppBar";
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -169,7 +169,7 @@ export default function ProductDetailsScreen() {
             setIsLoading(true);
             try {
               const orderData = {
-                supplierId: product.ownerId._id,
+                ownerId: product.ownerId._id,
                 items: [
                   {
                     productId: product._id,
@@ -180,7 +180,7 @@ export default function ProductDetailsScreen() {
                 totalAmount: (quantity * product.price).toFixed(2),
                 status: "pending",
                 createdAt: new Date().toISOString(),
-                userName: user?.name,
+                ownerName: user?.name,
               };
 
               const response = await api.post("/order", orderData);

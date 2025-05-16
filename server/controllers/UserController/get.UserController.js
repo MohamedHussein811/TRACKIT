@@ -1,6 +1,6 @@
-import User from "../../models/Users.js";
-import Product from "../../models/Products.js";
 import Order from "../../models/Orders.js";
+import Product from "../../models/Products.js";
+import User from "../../models/Users.js";
 
 export const getUser = async (req, res) => {
   try {
@@ -12,7 +12,10 @@ export const getUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    return res.json(user);
+    // Convert to plain object to ensure all fields are included
+    const userObject = user.toObject();
+    
+    return res.json(userObject);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "User not found" });
@@ -93,11 +96,7 @@ export const verifyUser = async (req, res, next) => {
 
     // Convert to plain object and remove sensitive fields
     const userObject = user.toObject();
-    delete userObject.activation_code;
-    delete userObject.isActivated;
-    delete userObject.resetPasswordToken;
-    delete userObject.suspended;
-    delete userObject.hidden;
+    console.log('userObject:', JSON.stringify(userObject, null, 2));
 
     return res.status(200).json({
       message: "OK",
@@ -207,7 +206,10 @@ export const getSuppliers = async (req, res) => {
       return res.status(404).json({ message: "No suppliers found" });
     }
 
-    return res.json(suppliers);
+    // Convert each supplier document to a plain object to ensure _id is included
+    const suppliersList = suppliers.map(supplier => supplier.toObject());
+
+    return res.json(suppliersList);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal server error" });
@@ -219,7 +221,7 @@ export const suppliersOrders = async (req, res) => {
     const userId = req.userId; // Assuming the userId comes from a middleware (authentication)
     
     // Fetch orders for the supplier
-    const orders = await Order.find({ supplierId: userId }).populate('items.productId');
+    const orders = await Order.find({ ownerId: userId }).populate('items.productId');
 
     // Optional: Aggregate some data (like total order value, status count, etc.)
     const totalOrders = orders.length;

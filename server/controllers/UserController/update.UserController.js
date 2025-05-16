@@ -79,7 +79,7 @@ export const updateUser = async (req, res) => {
   try {
     const userId = req.userId || req.params.id;
     const updateData = req.body;
-
+    console.log(updateData);
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -90,33 +90,6 @@ export const updateUser = async (req, res) => {
       if (emailExists && emailExists._id.toString() !== userId) {
         return res.status(400).json({ message: "Email already exists" });
       }
-    }
-
-    if(updateData.firstName.length < 3){
-      return res.status(400).json({ message: "First name must be at least 3 characters long" });
-    }
-
-    if (user.password) {
-      // If user has a password, verify the current password
-      if (!updateData.currentPassword) {
-        return res.status(400).json({ message: "Current password is required" });
-      }
-
-      const isPasswordValid = bcrypt.compareSync(updateData.currentPassword, user.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({ message: "Invalid password" });
-      }
-    } else {
-      // If user doesn't have a password, ensure a new password is provided
-      if (!updateData.newPassword) {
-        return res.status(400).json({ message: "New password is required" });
-      }
-
-      if (updateData.newPassword.length < 8) {
-        return res.status(400).json({ message: "Password must be at least 8 characters long" });
-      }
-
-      user.password = bcrypt.hashSync(updateData.newPassword, 10);
     }
 
     // Update user fields

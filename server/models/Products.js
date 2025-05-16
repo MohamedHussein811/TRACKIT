@@ -9,14 +9,12 @@ const productSchema = new Schema({
   sku: {
     type: String,
     default: "",
-
   },
   image: {
     type: String,
     required: true,
     default: "https://via.placeholder.com/150",
   },
-
   description: {
     type: String,
     default: '',
@@ -40,13 +38,10 @@ const productSchema = new Schema({
     type: Number,
     default: 0,
   },
-  supplierId: {
-    type: Schema.Types.ObjectId,
-    ref: "users",
-  },
   ownerId: {
     type: Schema.Types.ObjectId,
     ref: "users",
+    required: true
   },
 }, { timestamps: true });
 

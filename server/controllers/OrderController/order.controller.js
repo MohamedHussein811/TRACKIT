@@ -1,20 +1,21 @@
 import Order from "../../models/Orders.js";
 import Product from "../../models/Products.js";
 import User from "../../models/Users.js";
+
 export const createOrder = async (req, res) => {
   try {
     const userId = req.userId || req.body.userId;
 
     const {
-      supplierId,
+      ownerId,
       items,
       totalAmount,
       status = "pending",
       createdAt,
-      userName,
+      ownerName,
     } = req.body;
 
-    if (!supplierId || !items || !totalAmount) {
+    if (!ownerId || !items || !totalAmount) {
       return res.status(400).json({ message: "Missing required fields" });
     }
 
@@ -47,8 +48,8 @@ export const createOrder = async (req, res) => {
     );
 
     const orderData = {
-      supplierId,
-      userName,
+      ownerId,
+      ownerName,
       items: items.map((item) => ({
         productId: item.productId,
         quantity: item.quantity,
@@ -75,7 +76,7 @@ export const createOrder = async (req, res) => {
 export const createUnitItemOrder = async (req, res) => {
   try {
     const { productId } = req.params;
-    const userName = req.body.userName; // Get userName from request body or session
+    const ownerName = req.body.ownerName;
 
     const quantity = 1;
     const product = await Product.findById(productId);
@@ -94,8 +95,8 @@ export const createUnitItemOrder = async (req, res) => {
 
     // Create a new order with the unit item
     const orderData = {
-      supplierId: null,
-      userName: userName,
+      ownerId: product.ownerId,
+      ownerName: ownerName,
       items: [
         {
           productId: productId,
@@ -128,15 +129,15 @@ export const getOrders = async (req, res) => {
       select: "name category brand price stock images",
     });
 
-    // Lookup user data for each order based on userName
+    // Lookup user data for each order based on ownerName
     const ordersWithUserData = await Promise.all(
       orders.map(async (order) => {
-        const user = await User.findOne({ name: order.userName }).select(
+        const user = await User.findOne({ name: order.ownerName }).select(
           "email phone role name userType avatar rating"
         );
         return {
           ...order.toObject(),
-          userData: user || null, // add userData to each order
+          userData: user || null,
         };
       })
     );

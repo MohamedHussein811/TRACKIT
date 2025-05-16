@@ -22,12 +22,12 @@ const orderItemSchema = new Schema(
 
 const orderSchema = new Schema(
   {
-    supplierId: {
+    ownerId: {
       type: Schema.Types.ObjectId,
       ref: "users",
-      
+      required: true
     },
-    userName: {
+    ownerName: {
       type: String,
       required: true,
     },

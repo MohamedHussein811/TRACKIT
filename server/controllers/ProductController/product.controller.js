@@ -1,6 +1,5 @@
-import Product from "../../models/Products.js";
-import User from "../../models/Users.js";
 import axios from "axios";
+import Product from "../../models/Products.js";
 
 // Create a new product with QR code generation
 export const createProduct = async (req, res) => {
@@ -62,6 +61,17 @@ export const getProducts = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+export const getProductsByOwnerId = async (req, res) => {
+  try {
+    const products = await Product.find({
+      ownerId: req.params.ownerId, // Filter products by the owner's ID
+    });
+    res.status(200).json(products);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 export const getProductById = async (req, res) => {
   try {

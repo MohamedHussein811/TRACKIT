@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Order } from '@/types';
 import Colors from '@/constants/colors';
-import { Package, Truck, ShoppingCart } from 'lucide-react-native';
+import { Order } from '@/types';
+import { Package, ShoppingCart, Truck } from 'lucide-react-native';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface OrderCardProps {
   order: Order;
@@ -53,13 +53,12 @@ export default function OrderCard({ order, onPress }: OrderCardProps) {
   };
 
   // Get supplier display name safely
-  const getSupplierDisplayName = () => {
-    // Check if supplierId exists and has either name or email property
-    if (!order.supplierId) {
-      return 'Supplier';
+  const getSupplierName = (order: Order) => {
+    // Check if ownerId exists and has either name or email property
+    if (!order.ownerId) {
+      return 'Unknown Owner';
     }
-    
-    return order.supplierId.name || order.supplierId.email || 'Unnamed Supplier';
+    return order.ownerName || 'Unnamed Owner';
   };
 
   // Display the order card
@@ -80,7 +79,7 @@ export default function OrderCard({ order, onPress }: OrderCardProps) {
       </View>
       
       <View style={styles.details}>
-        <Text style={styles.supplierName}>{getSupplierDisplayName()}</Text>
+        <Text style={styles.supplierName}>{getSupplierName(order)}</Text>
         <Text style={styles.orderDate}>{formatDate(order.createdAt)}</Text>
       </View>
       
