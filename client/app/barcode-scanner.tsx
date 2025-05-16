@@ -34,7 +34,7 @@ const QRcodeScannerScreen = () => {
       const url = data.split("/").pop(); // Extract the last part of the URL
 
       const res = await api.post(`/order/unitItem/${url}`,{
-        userName: user?.name,
+       ownerName: user?.name,
       });
       if (res.status === 201) {
         console.log("Order created successfully:", res.data);
