@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-//Routes
+//Routesss
 import moderatorRoutes from "./moderatorRoutes.js";
 import userRoutes from "./userRoutes.js";
 import productRoutes from "./product.route.js";
