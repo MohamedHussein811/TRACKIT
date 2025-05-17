@@ -167,7 +167,7 @@ export default function EventPaymentScreen() {
           {
             text: "OK",
             onPress: () => {
-              router.push("/(tabs)/events");
+              router.push("/(tabs)/owner/events");
             },
           },
         ]
