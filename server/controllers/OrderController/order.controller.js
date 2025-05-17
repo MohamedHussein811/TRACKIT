@@ -13,6 +13,8 @@ export const createOrder = async (req, res) => {
       status = "pending",
       createdAt,
       ownerName,
+      shipping,
+      payment,
     } = req.body;
 
     if (!ownerId || !items || !totalAmount) {
@@ -47,6 +49,22 @@ export const createOrder = async (req, res) => {
       })
     );
 
+    // Process payment info (if provided)
+    let processedPayment = null;
+    if (payment) {
+      // Store only last 4 digits of card number for security
+      processedPayment = {
+        cardholderName: payment.cardholderName,
+        cardLastFour: payment.cardNumber ? payment.cardNumber.slice(-4) : null,
+        cardType: payment.cardType,
+        paymentMethod: payment.paymentMethod || "credit_card",
+        paymentStatus: payment.paymentStatus || "pending"
+      };
+      
+      // Never store CVV/CVC in the database
+      // Omitting this data from being saved
+    }
+
     const orderData = {
       ownerId,
       ownerName,
@@ -56,6 +74,8 @@ export const createOrder = async (req, res) => {
         unitPrice: item.unitPrice,
       })),
       totalAmount,
+      shipping: shipping || {},
+      payment: processedPayment,
       status,
       createdAt: createdAt || new Date().toISOString(),
     };
