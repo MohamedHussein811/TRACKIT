@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Text, View, StyleSheet, Alert } from "react-native";
 import { Camera, CameraView, BarcodeScanningResult } from "expo-camera";
 import api from "@/utils/apiClient";
@@ -8,7 +8,10 @@ import AppBar from "@/components/AppBar";
 const QRcodeScannerScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const [cooldown, setCooldown] = useState(false);
+  const [lastScannedCode, setLastScannedCode] = useState(null);
   const { user } = useAuthStore();
+  const cooldownTimerRef = useRef(null);
 
   // Request camera permission
   useEffect(() => {
@@ -18,27 +21,58 @@ const QRcodeScannerScreen = () => {
     })();
   }, []);
 
+  // Clean up timer on component unmount
+  useEffect(() => {
+    return () => {
+      if (cooldownTimerRef.current) {
+        clearTimeout(cooldownTimerRef.current);
+      }
+    };
+  }, []);
+
   // Handle QR code scanning
   const handleBarcodeScanned = async (
     scanningResult: BarcodeScanningResult
   ) => {
-    if (!scanned) {
-      setScanned(true);
-      const { data, type, bounds, cornerPoints } = scanningResult;
-
-      // Print the URL to console
+    const { data } = scanningResult;
+    
+    // Prevent multiple scans during cooldown or if already processing
+    if (scanned || cooldown) {
+      return;
+    }
+    
+    // Prevent scanning the same QR code repeatedly
+    if (lastScannedCode === data) {
+      return;
+    }
+    
+    // Set states to prevent multiple scans
+    setScanned(true);
+    setCooldown(true);
+    setLastScannedCode(data);
+    
+    try {
       console.log("Scanned URL:", data);
-
-      // Optional: Show alert with the scanned URL
-
+      
       const url = data.split("/").pop(); // Extract the last part of the URL
 
-      const res = await api.post(`/order/unitItem/${url}`,{
-       ownerName: user?.name,
+      const res = await api.post(`/order/unitItem/${url}`, {
+        ownerName: user?.name,
       });
+      
       if (res.status === 201) {
         console.log("Order created successfully:", res.data);
         Alert.alert("Success", "Order created successfully!", [
+          {
+            text: "OK",
+            onPress: () => {
+              setScanned(false); // Allow scanning different codes
+            },
+          },
+        ]);
+      } else {
+        console.error("Error creating order:", res.data);
+        Alert.alert("Error", "Failed to create order. Please try again.", [
           {
             text: "OK",
             onPress: () => {
@@ -46,11 +80,24 @@ const QRcodeScannerScreen = () => {
             },
           },
         ]);
-      } else {
-        console.error("Error creating order:", res.data);
-        Alert.alert("Error", "Failed to create order. Please try again.");
       }
+    } catch (error) {
+      console.error("Error processing scan:", error);
+      Alert.alert("Error", "An unexpected error occurred. Please try again.", [
+        {
+          text: "OK",
+          onPress: () => {
+            setScanned(false);
+          },
+        },
+      ]);
     }
+    
+    // Set cooldown timer for 5 seconds
+    cooldownTimerRef.current = setTimeout(() => {
+      setCooldown(false);
+      // Only reset lastScannedCode after cooldown to prevent immediate rescanning
+    }, 5000);
   };
 
   // Render based on permissions
@@ -72,29 +119,42 @@ const QRcodeScannerScreen = () => {
 
   return (
     <>
-    <AppBar title="QR Code Scanner" isCanGoBack={true} />
-    <View style={styles.container}>
-      <CameraView
-        style={StyleSheet.absoluteFillObject}
-        barcodeScannerSettings={{
-          barcodeTypes: ["qr"],
-        }}
-        onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
-        onCameraReady={() => console.log("Camera is ready")}
-        onMountError={(error) => {
-          console.error("Camera error:", error);
-          Alert.alert("Camera Error", "Unable to access the camera");
-        }}
-      >
-        <View style={styles.overlay}>
-          {/* Scanning frame overlay */}
-          <View style={styles.frame} />
-          <Text style={styles.scanText}>
-            {scanned ? "Tap to Scan Again" : "Position QR code inside frame"}
-          </Text>
-        </View>
-      </CameraView>
-    </View>
+      <AppBar title="QR Code Scanner" isCanGoBack={true} />
+      <View style={styles.container}>
+        <CameraView
+          style={StyleSheet.absoluteFillObject}
+          barcodeScannerSettings={{
+            barcodeTypes: ["qr"],
+          }}
+          onBarcodeScanned={cooldown ? undefined : handleBarcodeScanned}
+          onCameraReady={() => console.log("Camera is ready")}
+          onMountError={(error) => {
+            console.error("Camera error:", error);
+            Alert.alert("Camera Error", "Unable to access the camera");
+          }}
+        >
+          <View style={styles.overlay}>
+            {/* Scanning frame overlay */}
+            <View style={styles.frame} />
+            <Text style={styles.scanText}>
+              {cooldown 
+                ? "Cooldown active (5s)..." 
+                : scanned 
+                  ? "Processing scan..." 
+                  : "Position QR code inside frame"}
+            </Text>
+            
+            {/* Visual cooldown indicator */}
+            {cooldown && (
+              <View style={styles.cooldownIndicator}>
+                <Text style={styles.cooldownText}>
+                  Ready to scan in 5 seconds
+                </Text>
+              </View>
+            )}
+          </View>
+        </CameraView>
+      </View>
     </>
   );
 };
@@ -122,6 +182,17 @@ const styles = StyleSheet.create({
     color: "white",
     marginTop: 20,
     fontSize: 16,
+    fontWeight: "bold",
+  },
+  cooldownIndicator: {
+    position: "absolute",
+    bottom: 50,
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    padding: 10,
+    borderRadius: 20,
+  },
+  cooldownText: {
+    color: "#FFA500",
     fontWeight: "bold",
   },
 });
