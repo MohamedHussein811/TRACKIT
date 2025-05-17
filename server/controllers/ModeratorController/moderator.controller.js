@@ -3,6 +3,7 @@ import Order from "../../models/Orders.js";
 import Product from '../../models/Products.js';
 import Reservation from "../../models/Reservation.js";
 import User from "../../models/Users.js";
+import axios from "axios";
 export const allOrders = async (req, res) => {
   try {
     // Fetch all orders from the database, optionally you can sort or paginate
@@ -52,7 +53,6 @@ export const editProduct = async (req, res) => {
   }
 };
 
-
 export const changeOrderStatus = async (req, res) => {
   try {
     const { orderId, status } = req.body;
@@ -83,10 +83,12 @@ export const changeOrderStatus = async (req, res) => {
           const customer = await User.findOne({ name: order.ownerName });
           
           if (customer) {
-            // Create a copy of the product for the customer
+            // Create a copy of the product for the customer with a temporary random SKU
+            const tempSku = Math.random().toString(36).substring(2, 18); // Generate random 16-character string
+            
             const newProduct = new Product({
               name: product.name,
-              sku: product.sku,
+              sku: tempSku,
               image: product.image,
               description: product.description,
               category: product.category,
@@ -96,8 +98,26 @@ export const changeOrderStatus = async (req, res) => {
               ownerId: customer._id // Set the customer as the owner
             });
             
-            // Save the new product
-            await newProduct.save();
+            // Save the new product to get the ID
+            const savedProduct = await newProduct.save();
+            
+            // Generate QR code using the product ID
+            try {
+              const qrResponse = await axios.post("https://api-novatech.vercel.app/qr/generate", {
+                endpoint: "https://api-trackit.vercel.app/",
+                product_id: savedProduct._id.toString(),
+                cloudinary_preset: "neena-bot"
+              });
+              
+              // Update the product with the QR code URL
+              if (qrResponse.data && qrResponse.data.secure_url) {
+                savedProduct.sku = qrResponse.data.secure_url;
+                await savedProduct.save();
+              }
+            } catch (qrError) {
+              console.error("Error generating QR code:", qrError);
+              // Product is still saved with the random SKU if QR generation fails
+            }
             
             // Increment the productsCount for the customer
             customer.productsCount = (customer.productsCount || 0) + 1;
