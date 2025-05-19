@@ -1,30 +1,31 @@
-import React, { useEffect, useState } from "react";
+import ProductCard from "@/components/ProductCard";
+import Colors from "@/constants/colors";
+import { fetchSuppliers } from "@/mocks/suppliers";
+import { useAuthStore } from "@/store/auth-store";
+import { Product, User } from "@/types";
+import api from "@/utils/apiClient";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
+  ArrowUpDown,
+  Package,
+  Plus,
+  ScanBarcode,
+  Search
+} from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
   Alert,
+  FlatList,
   Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import Colors from "@/constants/colors";
-import {
-  Search,
-  Plus,
-  Package,
-  Filter,
-  ScanBarcode,
-  ArrowUpDown,
-} from "lucide-react-native";
-import ProductCard from "@/components/ProductCard";
-import { Product, User } from "@/types";
-import { useAuthStore } from "@/store/auth-store";
-import api from "@/utils/apiClient";
-import { fetchSuppliers } from "@/mocks/suppliers";
 
 export default function InventoryScreen() {
   const router = useRouter();
@@ -34,6 +35,8 @@ export default function InventoryScreen() {
   const [filteredProducts, setFilteredProducts] = useState([] as Product[]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [suppliers, setSuppliers] = useState<User[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
   const fetchSuppliersData = async () => {
     try {
       const suppliers = await fetchSuppliers(); // Call the function to get the suppliers
@@ -45,40 +48,62 @@ export default function InventoryScreen() {
     }
   };
 
+  const fetchProducts = async () => {
+    try {
+      setRefreshing(true);
+      const res = await api.get("/products"); // Replace with your API endpoint
+      console.log("API response:", res);
+      if (res.status === 200) {
+        console.log(res.data);
+
+        // Find the supplier whose name matches the user's name
+        const supplier = suppliers.find((s) => s.name === user?.name);
+
+        if (supplier) {
+          // Filter products by ownerId matching supplier._id
+          const filteredProducts = res.data.filter(
+            (product: Product) => product.ownerId === supplier._id
+          );
+          setProducts(filteredProducts);
+          setFilteredProducts(filteredProducts);
+        } else {
+          console.error("No supplier found matching the user name");
+        }
+      } else {
+        Alert.alert("Error", "Failed to fetch products");
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      Alert.alert("Error", "An error occurred while fetching products");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Initial data fetch
   useEffect(() => {
     fetchSuppliersData();
   }, []);
+
+  // Fetch products when suppliers change
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await api.get("/products"); // Replace with your API endpoint
-        console.log("API response:", res);
-        if (res.status === 200) {
-          console.log(res.data);
+    if (suppliers.length > 0) {
+      fetchProducts();
+    }
+  }, [suppliers, user?.name]);
 
-          // Find the supplier whose name matches the user's name
-          const supplier = suppliers.find((s) => s.name === user?.name);
-
-          if (supplier) {
-            // Filter products by ownerId matching supplier._id
-            const filteredProducts = res.data.filter(
-              (product) => product.ownerId === supplier._id
-            );
-            setProducts(filteredProducts);
-            setFilteredProducts(filteredProducts);
-          } else {
-            console.error("No supplier found matching the user name");
-          }
-        } else {
-          Alert.alert("Error", "Failed to fetch products");
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-        Alert.alert("Error", "An error occurred while fetching products");
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      if (suppliers.length > 0) {
+        fetchProducts();
       }
-    };
+    }, [suppliers])
+  );
+
+  const handleRefresh = () => {
     fetchProducts();
-  }, [suppliers, user?.name]); // This effect will run when either suppliers or user.name changes
+  };
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -266,6 +291,16 @@ export default function InventoryScreen() {
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.productList}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={handleRefresh}
+            colors={[Colors.primary.burgundy]}
+            tintColor={Colors.primary.burgundy}
+            title="Refreshing inventory..."
+            titleColor={Colors.neutral.gray}
+          />
+        }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
             <Package size={48} color={Colors.neutral.lightGray} />

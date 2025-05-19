@@ -1,14 +1,14 @@
-import express, { json } from "express";
-import cors from "cors";
-import routes from "./routes/routes.js";
-import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
-import mongoose from "mongoose";
-import bodyParser from "body-parser";
 import axios from "axios";
+import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express, { json } from "express";
+import mongoose from "mongoose";
+import routes from "./routes/routes.js";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = process.env.BASE_URL;
-dotenv.config();
+dotenv.config({ path: './dev.env' });
 
 const allowedOrigins = [
   process.env.CLIENT_URL,

@@ -1,30 +1,30 @@
-import React, { useEffect, useState } from "react";
+import ProductCard from "@/components/ProductCard";
+import Colors from "@/constants/colors";
+import { useAuthStore } from "@/store/auth-store";
+import { Product } from "@/types";
+import api from "@/utils/apiClient";
+import { useFocusEffect } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  TextInput,
+  ArrowUpDown,
+  Package,
+  Plus,
+  ScanBarcode,
+  Search
+} from "lucide-react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
   Alert,
+  FlatList,
   Platform,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import Colors from "@/constants/colors";
-import {
-  Search,
-  Plus,
-  Package,
-  Filter,
-  ScanBarcode,
-  ArrowUpDown,
-} from "lucide-react-native";
-import ProductCard from "@/components/ProductCard";
-import { Product } from "@/types";
-import { useAuthStore } from "@/store/auth-store";
-import api from "@/utils/apiClient";
-import AppBar from "@/components/AppBar";
 
 export default function InventoryScreen() {
   const router = useRouter();
@@ -33,9 +33,11 @@ export default function InventoryScreen() {
   const [products, setProducts] = useState([] as Product[]); // Assuming products are fetched from a store or API
   const [filteredProducts, setFilteredProducts] = useState([] as Product[]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchProducts = async () => {
+  const fetchProducts = async () => {
+    try {
+      setRefreshing(true);
       const res = await api.get("/products"); // Replace with your API endpoint
       if (res.status === 200) {
         setProducts(res.data);
@@ -43,9 +45,29 @@ export default function InventoryScreen() {
       } else {
         Alert.alert("Error", "Failed to fetch products");
       }
-    };
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      Alert.alert("Error", "An error occurred while fetching products");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  // Initial data fetch
+  useEffect(() => {
     fetchProducts();
   }, []);
+
+  // Refresh data when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchProducts();
+    }, [])
+  );
+
+  const handleRefresh = () => {
+    fetchProducts();
+  };
 
   const handleSearch = (text: string) => {
     setSearchQuery(text);
@@ -234,6 +256,16 @@ export default function InventoryScreen() {
         keyExtractor={(item) => item._id}
         contentContainerStyle={styles.productList}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={handleRefresh}
+            colors={[Colors.primary.burgundy]}
+            tintColor={Colors.primary.burgundy}
+            title="Refreshing inventory..."
+            titleColor={Colors.neutral.gray}
+          />
+        }
         ListEmptyComponent={() => (
           <View style={styles.emptyContainer}>
             <Package size={48} color={Colors.neutral.lightGray} />

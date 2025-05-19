@@ -231,7 +231,23 @@ export default function AddProductScreen() {
         return;
       }
 
-      setGeneratedQRCode(res.data.sku); // Set the generated QR code URL
+      // Show success message and navigate back
+      Alert.alert(
+        "Success",
+        "Product added successfully",
+        [
+          {
+            text: "OK",
+            onPress: () => {
+              // Navigate back to the previous screen after success
+              router.back();
+            },
+          },
+        ]
+      );
+
+      // Don't show QR code modal if we're navigating back
+      // setGeneratedQRCode(res.data.sku);
 
     } catch (error) {
       console.error("Product creation exception:", error);
