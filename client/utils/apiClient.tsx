@@ -4,8 +4,8 @@ import { Alert } from 'react-native';
 import { router } from 'expo-router';
 
 const api = axios.create({
-  // baseURL: 'https://api-trackit.vercel.app',
-  baseURL: 'http://192.168.1.41:3000',
+  baseURL: 'https://api-trackit.vercel.app',
+  // baseURL: 'http://192.168.1.41:3000',
   headers: {
     'Content-Type': 'application/json',
   },
