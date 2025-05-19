@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Button,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import Colors from "@/constants/colors";
+import { useAuthStore } from "@/store/auth-store";
 import { Event } from "@/types";
+import api from "@/utils/apiClient";
+import { useRouter } from "expo-router";
 import {
   Calendar,
-  MapPin,
   Clock,
+  DollarSign,
+  MapPin,
   Ticket,
   User,
-  DollarSign,
 } from "lucide-react-native";
-import { useAuthStore } from "@/store/auth-store";
-import api from "@/utils/apiClient";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Image,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function EventsScreen() {
   const [activeTab, setActiveTab] = useState("upcoming");
@@ -33,6 +33,7 @@ export default function EventsScreen() {
   const [events, setEvents] = useState<Event[]>([]);
   const [soldTickets, setSoldTickets] = useState<any[]>([]); // Replace with actual type if available
   const [soldAllTickets, setAllSoldTickets] = useState<any[]>([]); // Replace with actual type if available
+  const [refreshing, setRefreshing] = useState(false);
 
   // For event managers, show event requests instead of regular events
   const isEventManager = userType === "organizer";
@@ -40,8 +41,9 @@ export default function EventsScreen() {
   // Combine original events with additional events
   const allEvents = [...events];
 
-  useEffect(() => {
-    const fetchEvents = async () => {
+  const fetchEvents = async () => {
+    try {
+      setRefreshing(true);
       const res = await api.get("/events");
       let sold = await api.get("/reservations");
 
@@ -53,11 +55,23 @@ export default function EventsScreen() {
       );
 
       setSoldTickets(sold.data);
-    };
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      Alert.alert("Error", "Failed to fetch events");
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     if (user) {
       fetchEvents();
     }
   }, [user]);
+
+  const handleRefresh = () => {
+    fetchEvents();
+  };
 
   const handleEventPress = (event: Event) => {
     // Navigate to event details
@@ -464,27 +478,46 @@ Price: $${ticket.price.toFixed(2)}`,
           keyExtractor={(item) => item._id}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={handleRefresh}
+              colors={[Colors.primary.burgundy]}
+              tintColor={Colors.primary.burgundy}
+              title="Refreshing tickets..."
+              titleColor={Colors.neutral.gray}
+            />
+          }
         />
       ) : (
-<FlatList
-  data={
-    activeTab === "upcoming"
-      ? allEvents
-      : allEvents.filter((event) =>
-          soldAllTickets.some(
-            (ticket) =>
-              ticket.eventId._id === event._id &&
-              ticket.attendeeName === user?.name &&
-              ticket.attendeeEmail === user?.email
-          )
-        )
-  }
-  renderItem={renderEventCard}
-  keyExtractor={(item) => item._id}
-  contentContainerStyle={styles.listContent}
-  showsVerticalScrollIndicator={false}
-/>
-
+        <FlatList
+          data={
+            activeTab === "upcoming"
+              ? allEvents
+              : allEvents.filter((event) =>
+                  soldAllTickets.some(
+                    (ticket) =>
+                      ticket.eventId._id === event._id &&
+                      ticket.attendeeName === user?.name &&
+                      ticket.attendeeEmail === user?.email
+                  )
+                )
+          }
+          renderItem={renderEventCard}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl 
+              refreshing={refreshing} 
+              onRefresh={handleRefresh}
+              colors={[Colors.primary.burgundy]}
+              tintColor={Colors.primary.burgundy}
+              title="Refreshing events..."
+              titleColor={Colors.neutral.gray}
+            />
+          }
+        />
       )}
 
       {/* Only show add button for event organizers */}
