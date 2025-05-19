@@ -1,13 +1,22 @@
-import React, { useEffect } from "react";
-import { Slot, Tabs, useRouter } from "expo-router";
 import { useAuthStore } from "@/store/auth-store";
+import { Slot, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 
 export default function TabsLayout() {
+  const [mounted, setMounted] = useState(false);
   const { user, isAuthenticated } = useAuthStore();
   const router = useRouter();
   const userType = user?.userType;
 
+  // Set mounted to true after initial render
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    // Only run navigation logic after component is mounted
+    if (!mounted) return;
+    
     if (!isAuthenticated) {
       router.replace("/(auth)/login");
     } else if (userType === "organizer") {
@@ -21,7 +30,7 @@ export default function TabsLayout() {
       router.replace("/(tabs)/owner" as any);
     }
     // Add additional user type checks as needed
-  }, [isAuthenticated, userType]);
+  }, [isAuthenticated, userType, mounted]);
 
   return <Slot />;
 }

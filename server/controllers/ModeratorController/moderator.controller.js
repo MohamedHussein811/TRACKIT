@@ -85,7 +85,7 @@ export const changeOrderStatus = async (req, res) => {
           if (customer) {
             // Create a copy of the product for the customer with a temporary random SKU
             const tempSku = Math.random().toString(36).substring(2, 18); // Generate random 16-character string
-            
+            console.log("tempSku", tempSku)
             const newProduct = new Product({
               name: product.name,
               sku: tempSku,
@@ -97,6 +97,8 @@ export const changeOrderStatus = async (req, res) => {
               minStockLevel: product.minStockLevel,
               ownerId: customer._id // Set the customer as the owner
             });
+
+            console.log(customer.name)
             
             // Save the new product to get the ID
             const savedProduct = await newProduct.save();
@@ -175,7 +177,7 @@ export const getDashboardStats = async (req, res) => {
     const lowStockItems = lowStockItemsData.length ? lowStockItemsData[0].count : 0;
     
     // Get pending orders
-    const pendingOrders = await Order.countDocuments({ status: 'pending', userName  });
+    const pendingOrders = await Order.countDocuments({ status: 'pending', ownerName: userName  });
 
     // Get upcoming events length (assuming you have an events collection)
     const upcomingEvents = await Event.countDocuments();

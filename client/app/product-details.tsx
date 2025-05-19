@@ -5,35 +5,84 @@ import { Product } from "@/types";
 import api from "@/utils/apiClient";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import {
-    AlertTriangle,
-    ArrowLeft,
-    BarChart3,
-    DollarSign,
-    Edit,
-    Package,
-    ShoppingCart,
-    Trash2,
-    Truck,
+  AlertTriangle,
+  ArrowLeft,
+  BarChart3,
+  DollarSign,
+  Edit,
+  ExternalLink,
+  Package,
+  ShoppingCart,
+  Trash2,
+  Truck,
+  X,
 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    Image,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Image,
+  Linking,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+
+// Define an extended type for Product that includes populated ownerId
+interface PopulatedProduct extends Omit<Product, 'ownerId'> {
+  ownerId: string | {
+    _id: string;
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+}
+
+interface ShippingInfo {
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+  phone: string;
+}
+
+interface PaymentInfo {
+  cardholderName: string;
+  cardNumber: string;
+  cardType: string;
+  paymentMethod: string;
+}
 
 export default function ProductDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const [product, setProduct] = useState<Product>();
+  const [product, setProduct] = useState<PopulatedProduct>();
   const { user, hasPermission } = useAuthStore();
   const [quantity, setQuantity] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [shippingInfo, setShippingInfo] = useState<ShippingInfo>({
+    name: '',
+    address: '',
+    city: '',
+    state: '',
+    postalCode: '',
+    country: '',
+    phone: '',
+  });
+  const [paymentInfo, setPaymentInfo] = useState<PaymentInfo>({
+    cardholderName: '',
+    cardNumber: '',
+    cardType: '',
+    paymentMethod: 'credit_card',
+  });
+  const [activeTab, setActiveTab] = useState<'shipping' | 'payment'>('shipping');
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -158,52 +207,63 @@ export default function ProductDetailsScreen() {
       return;
     }
 
-    Alert.alert(
-      "Confirm Order",
-      `Are you sure you want to order ${quantity} unit(s) of ${product.name}?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Order",
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              const orderData = {
-                ownerId: product.ownerId._id,
-                items: [
-                  {
-                    productId: product._id,
-                    quantity,
-                    unitPrice: product.price,
-                  },
-                ],
-                totalAmount: (quantity * product.price).toFixed(2),
-                status: "pending",
-                createdAt: new Date().toISOString(),
-                ownerName: user?.name,
-              };
+    setShowOrderModal(true);
+  };
 
-              const response = await api.post("/order", orderData);
-              if (response.status === 201) {
-                Alert.alert("Success", "Order placed successfully", [
-                  { text: "OK", onPress: () => router.back() },
-                ]);
-              } else {
-                Alert.alert(
-                  "Error",
-                  "Failed to place order. Please try again."
-                );
-              }
-            } catch (error) {
-              console.error("Error creating order:", error);
-              Alert.alert("Error", "Failed to place order. Please try again.");
-            } finally {
-              setIsLoading(false);
-            }
+  const handleSubmitOrder = async () => {
+    if (activeTab === 'shipping') {
+      setActiveTab('payment');
+      return;
+    }
+
+    // Validate payment info
+    if (!paymentInfo.cardholderName || !paymentInfo.cardNumber || !paymentInfo.cardType) {
+      Alert.alert("Error", "Please fill in all payment information");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const orderData = {
+        ownerId: typeof product.ownerId === 'object' ? product.ownerId._id : product.ownerId,
+        items: [
+          {
+            productId: product._id,
+            quantity,
+            unitPrice: product.price,
           },
-        },
-      ]
-    );
+        ],
+        totalAmount: (quantity * product.price).toFixed(2),
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        ownerName: user?.name,
+        shipping: shippingInfo,
+        payment: {
+          cardholderName: paymentInfo.cardholderName,
+          cardNumber: paymentInfo.cardNumber,
+          cardType: paymentInfo.cardType,
+          paymentMethod: paymentInfo.paymentMethod,
+        }
+      };
+
+      const response = await api.post("/order", orderData);
+      if (response.status === 201) {
+        setShowOrderModal(false);
+        Alert.alert("Success", "Order placed successfully", [
+          { text: "OK", onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert(
+          "Error",
+          "Failed to place order. Please try again."
+        );
+      }
+    } catch (error) {
+      console.error("Error creating order:", error);
+      Alert.alert("Error", "Failed to place order. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleIncreaseQuantity = () => {
@@ -324,12 +384,20 @@ export default function ProductDetailsScreen() {
                 <Package size={20} color={Colors.primary.burgundy} />
               </View>
               <Text style={styles.detailLabel}>SKU</Text>
-              <Image
-                source={{ uri: product.sku }}
-                style={styles.barcodeContainer}
-                resizeMode="contain"
-              />
-
+              <TouchableOpacity 
+                style={styles.skuContainer}
+                onPress={() => Linking.openURL(product.sku)}
+              >
+                <Image
+                  source={{ uri: product.sku }}
+                  style={styles.barcodeImage}
+                  resizeMode="contain"
+                />
+                <View style={styles.skuLinkIndicator}>
+                  <ExternalLink size={14} color={Colors.neutral.white} />
+                  <Text style={styles.skuLinkText}>Click to open</Text>
+                </View>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.detailItem}>
@@ -356,7 +424,9 @@ export default function ProductDetailsScreen() {
               </View>
               <Text style={styles.detailLabel}>Supplier</Text>
               <Text style={styles.detailValue}>
-                {product.ownerId?.name || product.ownerId?.email || "N/A"}
+                {typeof product.ownerId === 'object' 
+                  ? (product.ownerId.name || product.ownerId.email || "N/A") 
+                  : "N/A"}
               </Text>
             </View>
           </View>
@@ -406,6 +476,139 @@ export default function ProductDetailsScreen() {
           </TouchableOpacity>
         </View>
       )}
+
+      {/* Order Modal */}
+      <Modal
+        visible={showOrderModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setShowOrderModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>
+                {activeTab === 'shipping' ? 'Shipping Information' : 'Payment Information'}
+              </Text>
+              <TouchableOpacity onPress={() => setShowOrderModal(false)}>
+                <X size={24} color={Colors.neutral.darkGray} />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              {activeTab === 'shipping' ? (
+                <View>
+                  <Text style={styles.inputLabel}>Full Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.name}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, name: text})}
+                    placeholder="Enter your full name"
+                  />
+
+                  <Text style={styles.inputLabel}>Address</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.address}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, address: text})}
+                    placeholder="Enter your address"
+                  />
+
+                  <Text style={styles.inputLabel}>City</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.city}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, city: text})}
+                    placeholder="Enter your city"
+                  />
+
+                  <Text style={styles.inputLabel}>State/Province</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.state}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, state: text})}
+                    placeholder="Enter your state/province"
+                  />
+
+                  <Text style={styles.inputLabel}>Postal Code</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.postalCode}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, postalCode: text})}
+                    placeholder="Enter your postal code"
+                    keyboardType="numeric"
+                  />
+
+                  <Text style={styles.inputLabel}>Country</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.country}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, country: text})}
+                    placeholder="Enter your country"
+                  />
+
+                  <Text style={styles.inputLabel}>Phone Number</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={shippingInfo.phone}
+                    onChangeText={(text) => setShippingInfo({...shippingInfo, phone: text})}
+                    placeholder="Enter your phone number"
+                    keyboardType="phone-pad"
+                  />
+                </View>
+              ) : (
+                <View>
+                  <Text style={styles.inputLabel}>Cardholder Name</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={paymentInfo.cardholderName}
+                    onChangeText={(text) => setPaymentInfo({...paymentInfo, cardholderName: text})}
+                    placeholder="Enter cardholder name"
+                  />
+
+                  <Text style={styles.inputLabel}>Card Number</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={paymentInfo.cardNumber}
+                    onChangeText={(text) => setPaymentInfo({...paymentInfo, cardNumber: text})}
+                    placeholder="Enter card number"
+                    keyboardType="numeric"
+                    maxLength={16}
+                  />
+
+                  <Text style={styles.inputLabel}>Card Type</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={paymentInfo.cardType}
+                    onChangeText={(text) => setPaymentInfo({...paymentInfo, cardType: text})}
+                    placeholder="Enter card type (Visa, Mastercard, etc.)"
+                  />
+                </View>
+              )}
+            </ScrollView>
+
+            <View style={styles.modalFooter}>
+              {activeTab === 'payment' && (
+                <TouchableOpacity 
+                  style={styles.backButton}
+                  onPress={() => setActiveTab('shipping')}
+                >
+                  <Text style={styles.backButtonText}>Back</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity 
+                style={styles.submitButton}
+                onPress={handleSubmitOrder}
+                disabled={isLoading}
+              >
+                <Text style={styles.submitButtonText}>
+                  {activeTab === 'shipping' ? 'Continue to Payment' : 'Place Order'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -555,6 +758,32 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
+  skuContainer: {
+    backgroundColor: Colors.neutral.extraLightGray,
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  barcodeImage: {
+    width: '100%',
+    height: 80,
+  },
+  skuLinkIndicator: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 4,
+  },
+  skuLinkText: {
+    color: Colors.neutral.white,
+    fontSize: 12,
+    marginLeft: 4,
+  },
   barcodeText: {
     fontSize: 16,
     fontFamily: "monospace",
@@ -647,5 +876,62 @@ const styles = StyleSheet.create({
     color: Colors.neutral.white,
     fontSize: 16,
     fontWeight: "500",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: Colors.neutral.white,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: Colors.neutral.black,
+  },
+  modalBody: {
+    maxHeight: '70%',
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: Colors.neutral.darkGray,
+    marginBottom: 8,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: Colors.neutral.lightGray,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+  },
+  submitButton: {
+    flex: 1,
+    backgroundColor: Colors.primary.burgundy,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  submitButtonText: {
+    color: Colors.neutral.white,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

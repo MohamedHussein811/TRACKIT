@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Text, View, StyleSheet, Alert } from "react-native";
-import { Camera, CameraView, BarcodeScanningResult } from "expo-camera";
-import api from "@/utils/apiClient";
-import { useAuthStore } from "@/store/auth-store";
 import AppBar from "@/components/AppBar";
+import { useAuthStore } from "@/store/auth-store";
+import api from "@/utils/apiClient";
+import { BarcodeScanningResult, Camera, CameraView } from "expo-camera";
+import React, { useEffect, useRef, useState } from "react";
+import { Alert, StyleSheet, Text, View } from "react-native";
 
 const QRcodeScannerScreen = () => {
-  const [hasPermission, setHasPermission] = useState(null);
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null);
   const [scanned, setScanned] = useState(false);
   const [cooldown, setCooldown] = useState(false);
-  const [lastScannedCode, setLastScannedCode] = useState(null);
+  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
   const { user } = useAuthStore();
-  const cooldownTimerRef = useRef(null);
+  const cooldownTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Request camera permission
   useEffect(() => {
@@ -96,7 +96,7 @@ const QRcodeScannerScreen = () => {
     // Set cooldown timer for 5 seconds
     cooldownTimerRef.current = setTimeout(() => {
       setCooldown(false);
-      // Only reset lastScannedCode after cooldown to prevent immediate rescanning
+      setLastScannedCode(null); // Reset the last scanned code to allow rescanning
     }, 5000);
   };
 
@@ -119,7 +119,6 @@ const QRcodeScannerScreen = () => {
 
   return (
     <>
-      <AppBar title="QR Code Scanner" isCanGoBack={true} />
       <View style={styles.container}>
         <CameraView
           style={StyleSheet.absoluteFillObject}

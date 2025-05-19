@@ -30,7 +30,7 @@ export default function PendingOrdersScreen() {
 
         // Filter orders to only include those with status 'pending'
         const filteredOrders = response.data.orders.filter(
-          (order) => order.status === "pending" && order.userName === user.name
+          (order) => order.status === "pending" && order.ownerName === user.name
         );
         console.log("Pending Orders:", filteredOrders);
         setPendingOrders(filteredOrders);
@@ -64,7 +64,6 @@ export default function PendingOrdersScreen() {
           ),
         }}
       />
-      <AppBar title="Pending Orders" isCanGoBack={true} />
 
 
       <View style={styles.header}>
