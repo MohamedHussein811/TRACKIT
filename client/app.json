@@ -4,7 +4,8 @@
     "slug": "expo-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/adaptive-icon.png",
+    "scheme": "trackit",
     "userInterfaceStyle": "light",
     "splash": {
       "image": "./assets/splash.png",
@@ -34,9 +35,7 @@
         "projectId": "b7d820bb-b12f-4fb3-b5f1-32e79d183971"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/b7d820bb-b12f-4fb3-b5f1-32e79d183971",
       "enabled": true,
