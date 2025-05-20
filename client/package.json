@@ -1,11 +1,13 @@
 {
-  "name": "expo-app",
+  "name": "trackit-app",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start --tunnel",
     "start-web": "expo start --web --tunnel",
-    "start-web-dev": "DEBUG=expo* expo start --web --tunnel"
+    "start-web-dev": "DEBUG=expo* expo start --web --tunnel",
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -14,6 +16,7 @@
     "@react-navigation/native": "^7.1.9",
     "axios": "^1.8.4",
     "expo": "^53.0.7",
+    "expo-app": "file:",
     "expo-barcode-scanner": "^13.0.1",
     "expo-blur": "~14.1.4",
     "expo-camera": "^16.0.18",
@@ -30,25 +33,35 @@
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.4",
     "expo-system-ui": "~5.0.7",
+    "expo-updates": "~0.28.13",
     "expo-web-browser": "~14.1.6",
-    "lucide-react-native": "^0.475.0",
+    "lucide-react-native": "0.475.0",
     "nativewind": "^4.1.23",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "react-native": "0.79.2",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-native": "0.72.6",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-modal": "^14.0.0-rc.1",
     "react-native-safe-area-context": "5.4.0",
     "react-native-screens": "~4.10.0",
-    "react-native-svg": "15.11.2",
+    "react-native-svg": "13.9.0",
     "react-native-web": "^0.20.0",
+    "trackit-app": "file:",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@expo/metro-config": "^0.17.3",
     "@expo/ngrok": "^4.1.0",
-    "@types/react": "~19.0.10",
+    "@types/react": "^19.0.0",
+    "metro": "^0.80.6",
+    "metro-core": "^0.80.6",
     "typescript": "~5.8.3"
   },
-  "private": true
+  "private": true,
+  "resolutions": {
+    "@types/react": "^19.0.0",
+    "metro": "^0.80.6",
+    "metro-core": "^0.80.6"
+  }
 }
