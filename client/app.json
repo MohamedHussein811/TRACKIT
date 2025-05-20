@@ -24,7 +24,13 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.trackitapp"
+      "package": "com.trackitapp",
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png",
@@ -32,8 +38,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "b7d820bb-b12f-4fb3-b5f1-32e79d183971"
-      }
+        "projectId": "66cf3610-ac8d-4a0f-a66b-00e2b2e569d3"
+      },
+      "router": {}
     },
     "runtimeVersion": "1.0.0",
     "updates": {
@@ -47,6 +54,7 @@
       "expo-barcode-scanner",
       "expo-image-picker",
       "expo-media-library"
-    ]
+    ],
+    "owner": "kirraa699"
   }
 }

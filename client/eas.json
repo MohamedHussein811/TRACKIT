@@ -10,7 +10,12 @@
     },
     "release": {
       "android": {
-        "buildType": "apk"
+        "buildType": "apk",
+        "gradleCommand": ":app:assembleRelease",
+        "withoutCredentials": true
+      },
+      "env": {
+        "EXPO_NO_DOTENV": "1"
       },
       "channel": "release"
     },
