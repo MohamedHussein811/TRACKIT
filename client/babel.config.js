@@ -7,5 +7,11 @@ module.exports = function(api) {
           unstable_transformImportMeta: true
         }]
       ],
+      plugins: [
+        // Add React Native specific plugins
+        'react-native-reanimated/plugin',
+        // Enable proper error handling
+        ['@babel/plugin-transform-react-jsx-source', { development: true }]
+      ]
     };
   };

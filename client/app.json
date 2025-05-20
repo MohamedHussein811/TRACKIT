@@ -26,16 +26,28 @@
       "package": "com.trackitapp"
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
     },
     "extra": {
       "eas": {
         "projectId": "b7d820bb-b12f-4fb3-b5f1-32e79d183971"
       }
     },
-    "runtimeVersion": "50.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
     "updates": {
-      "url": "https://u.expo.dev/b7d820bb-b12f-4fb3-b5f1-32e79d183971"
-    }
+      "url": "https://u.expo.dev/b7d820bb-b12f-4fb3-b5f1-32e79d183971",
+      "enabled": true,
+      "fallbackToCacheTimeout": 0
+    },
+    "plugins": [
+      "expo-router",
+      "expo-camera",
+      "expo-barcode-scanner",
+      "expo-image-picker",
+      "expo-media-library"
+    ]
   }
 }
